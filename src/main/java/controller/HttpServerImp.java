@@ -113,8 +113,7 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 			if (col == 0) {
 				response.append("<tr>");
 			}
-			response.append("<td><img src=\"").append(ficha.getImagen())
-					.append("\" border=\"0\"><br>")
+			response.append("<td>")
 					.append("<a href=\"./torrent?").append(i).append("\">")
 					.append(ficha.getNombre()).append("</a>").append("<td>");
 			col++;
