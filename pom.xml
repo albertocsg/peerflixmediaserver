@@ -1,0 +1,36 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.acsg</groupId>
+  <artifactId>peerflix</artifactId>
+  <version>0.0.2</version>
+  <dependencies>
+  	<dependency>
+  		<groupId>org.springframework</groupId>
+  		<artifactId>spring-core</artifactId>
+  		<version>4.0.2.RELEASE</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.springframework</groupId>
+  		<artifactId>spring-context</artifactId>
+  		<version>4.0.2.RELEASE</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.jsoup</groupId>
+  		<artifactId>jsoup</artifactId>
+  		<version>1.7.3</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>com.sun.net.httpserver</groupId>
+  		<artifactId>http</artifactId>
+  		<version>20070405</version>
+  	</dependency>
+  </dependencies>
+  <build>
+  	<plugins>
+  		<plugin>
+  			<groupId>org.apache.maven.plugins</groupId>
+  			<artifactId>maven-assembly-plugin</artifactId>
+  		</plugin>
+  	</plugins>
+  </build>
+</project>
