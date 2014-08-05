@@ -6,7 +6,7 @@ import model.Ficha;
 
 public interface IDocumentsOper {
 
-	public String getPageURL(int page);
+	public String getPageURL(int type, int page);
 	
 	public List<Ficha> processPage(String page);
 	

@@ -20,11 +20,43 @@ import org.springframework.stereotype.Component;
 @Component
 public class DocumentsOperElite implements IDocumentsOper {
 
-	public String getPageURL(int page) {
+	public String getPageURL(int typeDoc, int page) {
 		StringBuilder document = new StringBuilder();
 		try {
 			
-			URL url = new URL("http://www.elitetorrent.net/descargas/pag:" + page);
+			URL url = null;
+			
+			switch (typeDoc) {
+			
+				case 1:	// estrenos
+					url = new URL("http://www.elitetorrent.net/categoria/1/estrenos/pag:" + page);
+					break;
+					
+				case 2: // peliculas
+					url = new URL("http://www.elitetorrent.net/categoria/2/peliculas/pag:" + page);
+					break;
+					
+				case 3: // HDRIP
+					url = new URL("http://www.elitetorrent.net/categoria/13/peliculas-hdrip/pag:" + page);
+					break;
+					
+				case 4: // microHD
+					url = new URL("http://www.elitetorrent.net/categoria/17/peliculas-microhd/pag:" + page);
+					break;
+					
+				case 5: // series
+					url = new URL("http://www.elitetorrent.net/categoria/4/series/pag:" + page);
+					break;
+					
+				case 6:	// docus y tv
+					url = new URL("http://www.elitetorrent.net/categoria/6/docus-y-tv/pag:" + page);
+					break;
+					
+				default:	// all
+					url = new URL("http://www.elitetorrent.net/descargas/pag:" + page);
+					break;
+			
+			}
 			
 			URLConnection conn = url.openConnection();
 			BufferedReader entrada = new BufferedReader( new InputStreamReader(conn.getInputStream()));

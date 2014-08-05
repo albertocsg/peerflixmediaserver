@@ -2,6 +2,7 @@ package oper.exec;
 
 import java.io.IOException;
 
+import model.Ficha;
 import oper.config.IConfig;
 import oper.config.IConfig.Keys;
 
@@ -17,16 +18,19 @@ public class RunPeerflixImp implements IRunPeerflix {
 	private IConfig config;
 
 	private static Process peerflixProcess = null;
+	private static Ficha fichaRunning = null;
 
-	public void run(String url) {
+	public void run(Ficha ficha) {
 		try {
+			fichaRunning = ficha;
 			String peerflixPath = config.getValue(Keys.PEERFLIXPATH);
 			String downloadPath = config.getValue(Keys.DOWNLOADPATH);
-			peerflixProcess = new ProcessBuilder(peerflixPath, url, "--quiet", "--remove",
+			peerflixProcess = new ProcessBuilder(peerflixPath, ficha.getTorrent(), "--quiet", "--remove",
 					"--port", "1234", "--path", downloadPath).start();
 		} catch (IOException e) {
 			e.printStackTrace();
 			peerflixProcess = null;
+			fichaRunning = null;
 		}
 	}
 
@@ -39,9 +43,19 @@ public class RunPeerflixImp implements IRunPeerflix {
 				e.printStackTrace();
 			} finally {
 				peerflixProcess = null;
+				fichaRunning = null;
 			}
 		}
 
 	}
+
+	public Ficha getFicha() {
+		return fichaRunning;
+	}
+
+	public boolean isRunning() {
+		return peerflixProcess != null;
+	}
+	
 
 }

@@ -76,7 +76,33 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		String response = null;
 
 		if (exchange.getRequestURI().getPath().equals("/list")) {
-			response = tryList();
+			response = tryList(0);
+		} else if (exchange.getRequestURI().getPath().equals("/estrenos")) {
+			response = tryList(1);
+		} else if (exchange.getRequestURI().getPath().equals("/peliculas")) {
+			response = tryList(2);
+		} else if (exchange.getRequestURI().getPath().equals("/hdrip")) {
+			response = tryList(3);
+		} else if (exchange.getRequestURI().getPath().equals("/microhd")) {
+			response = tryList(4);
+		} else if (exchange.getRequestURI().getPath().equals("/series")) {
+			response = tryList(5);
+		} else if (exchange.getRequestURI().getPath().equals("/docusytv")) {
+			response = tryList(6);
+		} else if (exchange.getRequestURI().getPath().equals("/listpch")) {
+			response = tryListPCH(0);
+		} else if (exchange.getRequestURI().getPath().equals("/estrenospch")) {
+			response = tryListPCH(1);
+		} else if (exchange.getRequestURI().getPath().equals("/peliculaspch")) {
+			response = tryListPCH(2);
+		} else if (exchange.getRequestURI().getPath().equals("/hdrippch")) {
+			response = tryListPCH(3);
+		} else if (exchange.getRequestURI().getPath().equals("/microhdpch")) {
+			response = tryListPCH(4);
+		} else if (exchange.getRequestURI().getPath().equals("/seriespch")) {
+			response = tryListPCH(5);
+		} else if (exchange.getRequestURI().getPath().equals("/docusytvpch")) {
+			response = tryListPCH(6);
 		} else if (exchange.getRequestURI().getPath().equals("/detail")) {
 			response = tryDetail();
 		} else if (exchange.getRequestURI().getPath().equals("/torrent")) {
@@ -94,17 +120,31 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		out.close();
 	}
 
-	private String tryList() {
+	private String tryList(int type) {
 		StringBuilder response = new StringBuilder();
 
 		fichas = new ArrayList<Ficha>();
-		for (int i = 1; i < 5; i++) {
-			String page = documentsOper.getPageURL(i);
+		for (int i = 1; i <= 5; i++) {
+			String page = documentsOper.getPageURL(type,i);
 			List<Ficha> fichasTmp = documentsOper.processPage(page);
 			fichas.addAll(fichasTmp);
 		}
 
-		System.out.println(fichas.size());
+		if (runPeerflix.isRunning()) {
+			response.append("<a href=\"http://").append(getInternalIP())
+					.append(":1234\" vod>Ver ")
+					.append(runPeerflix.getFicha().getNombre())
+					.append("</a><br><br>");
+		}
+
+		response.append("<a href=\"./list\">Todos</a><br>");
+		response.append("<a href=\"./estrenos\">Estrenos</a><br>");
+		response.append("<a href=\"./peliculas\">Peliculas</a><br>");
+		response.append("<a href=\"./hdrip\">HDRIP</a><br>");
+		response.append("<a href=\"./microhd\">MicroHD</a><br>");
+		response.append("<a href=\"./series\">Series</a><br>");
+		response.append("<a href=\"./docusytv\">Documentales y TV</a><br>");
+		response.append("<br>");
 
 		int col = 0;
 		int i = 0;
@@ -113,7 +153,8 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 			if (col == 0) {
 				response.append("<tr>");
 			}
-			response.append("<td>")
+			response.append("<td><img src=\"").append(ficha.getImagen())
+					.append("\" border=\"0\"><br>")
 					.append("<a href=\"./torrent?").append(i).append("\">")
 					.append(ficha.getNombre()).append("</a>").append("<td>");
 			col++;
@@ -124,6 +165,54 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 			}
 		}
 		response.append("</table>");
+
+		return response.toString();
+	}
+	
+	private String tryListPCH(int type) {
+		StringBuilder response = new StringBuilder();
+
+		fichas = new ArrayList<Ficha>();
+		for (int i = 1; i <= 5; i++) {
+			String page = documentsOper.getPageURL(type,i);
+			List<Ficha> fichasTmp = documentsOper.processPage(page);
+			fichas.addAll(fichasTmp);
+		}
+
+		int col = 0;
+		int i = 0;
+		response.append(getHtmlHeader());
+		if (runPeerflix.isRunning()) {
+			response.append("<a href=\"http://").append(getInternalIP())
+					.append(":1234\" vod>Ver ")
+					.append(runPeerflix.getFicha().getNombre())
+					.append("</a><br><br>");
+		}
+		response.append("<a href=\"./listpch\">Todos</a><br>");
+		response.append("<a href=\"./estrenospch\">Estrenos</a><br>");
+		response.append("<a href=\"./peliculaspch\">Peliculas</a><br>");
+		response.append("<a href=\"./hdrippch\">HDRIP</a><br>");
+		response.append("<a href=\"./microhdpch\">MicroHD</a><br>");
+		response.append("<a href=\"./seriespch\">Series</a><br>");
+		response.append("<a href=\"./docusytvpch\">Documentales y TV</a><br>");
+		response.append("<br>");
+		response.append("<table>");
+		for (Ficha ficha : fichas) {
+			if (col == 0) {
+				response.append("<tr>");
+			}
+			response.append("<td>")
+					.append("<a href=\"./torrent?").append(i).append("\">")
+					.append(ficha.getNombre()).append("</a>").append("<td>");
+			col++;
+			i++;
+			if (col == 4) {
+				response.append("</tr>");
+				col = 0;
+			}
+		}
+		response.append("</table>");
+		response.append(getHtmlFooter());
 
 		return response.toString();
 	}
@@ -138,12 +227,12 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		if (fichas.get(i).getTorrent() == null) {
 			String torrent = documentsOper.getTorrent(fichas.get(i).getUrl());
 			fichas.get(i).setTorrent(torrent);
-			System.out.println("torrent: " + torrent);
 		}
 		runPeerflix.stop();
-		runPeerflix.run(fichas.get(i).getTorrent());
+		runPeerflix.run(fichas.get(i));
 
-		response = "<a href=\"http://" + getInternalIP()
+		response = "<img src=\"" + fichas.get(i).getImagen() + "\" border=\"0\"><br>";
+		response += "<a href=\"http://" + getInternalIP()
 				+ ":1234\" vod>ver</a>";
 
 		return response;
@@ -177,6 +266,25 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		}
 
 		return ip;
+	}
+	
+	private String getHtmlHeader() {
+		StringBuilder header = new StringBuilder();
+		header.append("<html>")
+			.append("<head>")
+			.append("<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">")
+			.append("<meta SYABAS-FULLSCREEN>")
+			.append("</head>")
+			.append("<body bgcolor=\"#111111\" text=\"#f0f8ff\" link=\"#f0f8ff\" alink=\"#ffd700\">");
+		return header.toString();
+	}
+	
+	private String getHtmlFooter() {
+		StringBuilder footer = new StringBuilder();
+		footer.append("</body>")
+			.append("</html>");
+		return footer.toString();
+
 	}
 
 }
