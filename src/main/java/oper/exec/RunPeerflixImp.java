@@ -21,6 +21,16 @@ public class RunPeerflixImp implements IRunPeerflix {
 	private static Ficha fichaRunning = null;
 
 	public void run(Ficha ficha) {
+		// If the ficha is the same that the one that is running, then do nothing.
+		if (fichaRunning != null && ficha != null && fichaRunning.getTorrent().equals(ficha.getTorrent())) {
+			return;
+		}
+		
+		// If there is another peerflix running, then it stop it.
+		if (isRunning()) {
+			stop();
+		}
+		
 		try {
 			fichaRunning = ficha;
 			String peerflixPath = config.getValue(Keys.PEERFLIXPATH);

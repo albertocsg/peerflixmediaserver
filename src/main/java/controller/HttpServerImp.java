@@ -228,7 +228,6 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 			String torrent = documentsOper.getTorrent(fichas.get(i).getUrl());
 			fichas.get(i).setTorrent(torrent);
 		}
-		runPeerflix.stop();
 		runPeerflix.run(fichas.get(i));
 
 		response = "<img src=\"" + fichas.get(i).getImagen() + "\" border=\"0\"><br>";
