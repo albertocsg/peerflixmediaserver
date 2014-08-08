@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.acsg</groupId>
   <artifactId>peerflix</artifactId>
-  <version>0.0.5</version>
+  <version>0.0.6</version>
   <dependencies>
   	<dependency>
   		<groupId>org.springframework</groupId>
@@ -29,7 +29,17 @@
   	<plugins>
   		<plugin>
   			<groupId>org.apache.maven.plugins</groupId>
-  			<artifactId>maven-assembly-plugin</artifactId>
+  			<artifactId>maven-jar-plugin</artifactId>
+  			<version>2.4</version>
+  			<configuration>
+  				<archive>
+  					<manifest>
+  						<addClasspath>true</addClasspath>
+  						<classpathPrefix>lib/</classpathPrefix>
+  						<mainClass>view.PeerFlixServer</mainClass>
+  					</manifest>
+  				</archive>
+  			</configuration>
   		</plugin>
   	</plugins>
   </build>
