@@ -7,7 +7,8 @@
 
 	<context:annotation-config />
 	
-	<!-- <context:component-scan base-package="controller"></context:component-scan> -->
-	<context:component-scan base-package="*"></context:component-scan>
+	<context:component-scan base-package="controller"></context:component-scan>
+	<context:component-scan base-package="oper"></context:component-scan>
+	<!-- <bean id="httpServer" class="controller.HttpServerImp"></bean> -->
 
 </beans>

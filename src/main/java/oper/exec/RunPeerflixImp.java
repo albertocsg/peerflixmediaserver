@@ -26,7 +26,7 @@ public class RunPeerflixImp implements IRunPeerflix {
 			return;
 		}
 		
-		// If there is another peerflix running, then it stop it.
+		// If there is another peerflix running, then stop it.
 		if (isRunning()) {
 			stop();
 		}

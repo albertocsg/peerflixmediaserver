@@ -9,7 +9,7 @@ public class ConfigImp implements IConfig {
 
 	public String getValue(Keys key) {
 		String value = "";
-		ResourceBundle rb = ResourceBundle.getBundle("config");
+		ResourceBundle rb = ResourceBundle.getBundle("config/config");
 		
 		// If the config file is null, then return null.
 		if (rb == null) {

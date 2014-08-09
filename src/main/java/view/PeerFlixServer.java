@@ -10,7 +10,7 @@ public class PeerFlixServer {
 	public static void main(String[] args) {
 		
 		ApplicationContext context =
-				new ClassPathXmlApplicationContext(new String[] {"SpringBeans.xml"});
+				new ClassPathXmlApplicationContext("SpringBeans.xml");
 
 		IHttpServer httpServerOper = (IHttpServer) context.getBean("httpServer");
 		httpServerOper.init();

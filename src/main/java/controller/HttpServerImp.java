@@ -69,9 +69,6 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 
 	public void handle(HttpExchange exchange) throws IOException {
 
-		System.out.println(exchange.getRequestURI().getPath());
-		System.out.println(exchange.getRequestURI().getQuery());
-
 		OutputStream out = null;
 		String response = null;
 
