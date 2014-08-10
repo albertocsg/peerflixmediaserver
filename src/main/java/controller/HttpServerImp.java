@@ -111,6 +111,8 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 			response = tryDetail();
 		} else if (exchange.getRequestURI().getPath().equals("/torrent")) {
 			response = tryTorrent(exchange.getRequestURI().getQuery());
+		} else if (exchange.getRequestURI().getPath().equals("/test")) {
+			response = testBootstrap();
 		} else {
 			response = "Página no encontrada...";
 		}
@@ -374,6 +376,7 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 	private String getCategoriesPCH() {
 		StringBuilder response = new StringBuilder();
 		
+		response.append("<a href=\"./test\">Test Bootstrap</a><br>");
 		response.append("<a href=\"./listpch\">Todos</a><br>");
 		response.append("<a href=\"./estrenospch\">Estrenos</a><br>");
 		response.append("<a href=\"./peliculaspch\">Peliculas</a><br>");
@@ -391,6 +394,7 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 	private String getCategories() {
 		StringBuilder response = new StringBuilder();
 		
+		response.append("<a href=\"./test\">Test Bootstrap</a><br>");
 		response.append("<a href=\"./list\">Todos</a><br>");
 		response.append("<a href=\"./estrenos\">Estrenos</a><br>");
 		response.append("<a href=\"./peliculas\">Peliculas</a><br>");
@@ -403,6 +407,53 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		response.append("<br>");
 		
 		return response.toString();
+	}
+	
+	private String testBootstrap() {
+		StringBuilder page = new StringBuilder();
+
+		page.append("	<!DOCTYPE html>");
+		page.append("		<html lang=\"en\">");
+		page.append("		  <head>");
+		page.append("		    <meta charset=\"utf-8\">");
+		page.append("		    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">");
+		page.append("		    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+		page.append("		    <title>Starter Template for Bootstrap</title>");
+		page.append("		    <!-- Bootstrap core CSS -->");
+		page.append("		    <link href=\"http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css\" rel=\"stylesheet\">");
+		page.append("		  </head>");
+		page.append("		  <body>");
+		page.append("		    <div class=\"navbar navbar-inverse navbar-fixed-top\" role=\"navigation\">");
+		page.append("		      <div class=\"container\">");
+		page.append("		        <div class=\"navbar-header\">");
+		page.append("		          <button type=\"button\" class=\"navbar-toggle\" data-toggle=\"collapse\" data-target=\".navbar-collapse\">");
+		page.append("		            <span class=\"sr-only\">Toggle navigation</span>");
+		page.append("		            <span class=\"icon-bar\"></span>");
+		page.append("		            <span class=\"icon-bar\"></span>");
+		page.append("		            <span class=\"icon-bar\"></span>");
+		page.append("		          </button>");
+		page.append("		          <a class=\"navbar-brand\" href=\"#\">Project name</a>");
+		page.append("		        </div>");
+		page.append("		        <div class=\"collapse navbar-collapse\">");
+		page.append("		          <ul class=\"nav navbar-nav\">");
+		page.append("		            <li class=\"active\"><a href=\"#\">Home</a></li>");
+		page.append("		            <li><a href=\"#about\">About</a></li>");
+		page.append("		            <li><a href=\"#contact\">Contact</a></li>");
+		page.append("		          </ul>");
+		page.append("		        </div><!--/.nav-collapse -->");
+		page.append("		      </div>");
+		page.append("		    </div>");
+		page.append("		    <div class=\"container\">");
+		page.append("		      <div class=\"starter-template\">");
+		page.append("		        <h1>Bootstrap starter template</h1>");
+		page.append("		        <p class=\"lead\">Use this document as a way to quickly start any new project.<br> All you get is this text and a mostly barebones HTML document.</p>");
+		page.append("		      </div>");
+		page.append("		    </div><!-- /.container -->");
+		page.append("		  </body>");
+		page.append("		</html>");
+		
+		
+		return page.toString(); 
 	}
 
 }
