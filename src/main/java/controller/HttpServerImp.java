@@ -71,6 +71,7 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 
 		OutputStream out = null;
 		String response = null;
+		String search = null;
 
 		if (exchange.getRequestURI().getPath().equals("/list")) {
 			response = tryList(0);
@@ -86,6 +87,9 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 			response = tryList(5);
 		} else if (exchange.getRequestURI().getPath().equals("/docusytv")) {
 			response = tryList(6);
+		} else if (exchange.getRequestURI().getPath().equals("/search")) {
+			search = exchange.getRequestURI().getQuery();
+			response = trySearch(search);
 		} else if (exchange.getRequestURI().getPath().equals("/listpch")) {
 			response = tryListPCH(0);
 		} else if (exchange.getRequestURI().getPath().equals("/estrenospch")) {
@@ -100,6 +104,9 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 			response = tryListPCH(5);
 		} else if (exchange.getRequestURI().getPath().equals("/docusytvpch")) {
 			response = tryListPCH(6);
+		} else if (exchange.getRequestURI().getPath().equals("/searchpch")) {
+			search = exchange.getRequestURI().getQuery();
+			response = trySearchPCH(search);
 		} else if (exchange.getRequestURI().getPath().equals("/detail")) {
 			response = tryDetail();
 		} else if (exchange.getRequestURI().getPath().equals("/torrent")) {
@@ -134,18 +141,11 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 					.append("</a><br><br>");
 		}
 
-		response.append("<a href=\"./list\">Todos</a><br>");
-		response.append("<a href=\"./estrenos\">Estrenos</a><br>");
-		response.append("<a href=\"./peliculas\">Peliculas</a><br>");
-		response.append("<a href=\"./hdrip\">HDRIP</a><br>");
-		response.append("<a href=\"./microhd\">MicroHD</a><br>");
-		response.append("<a href=\"./series\">Series</a><br>");
-		response.append("<a href=\"./docusytv\">Documentales y TV</a><br>");
-		response.append("<br>");
-
+		response.append(getCategories());
+		
+		response.append("<table>");
 		int col = 0;
 		int i = 0;
-		response.append("<table>");
 		for (Ficha ficha : fichas) {
 			if (col == 0) {
 				response.append("<tr>");
@@ -166,6 +166,50 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		return response.toString();
 	}
 	
+	private String trySearch(String search) {
+		StringBuilder response = new StringBuilder();
+
+		fichas = new ArrayList<Ficha>();
+		for (int i = 1; i <= 5; i++) {
+			String page = documentsOper.getPageSearch(search, i);
+			List<Ficha> fichasTmp = documentsOper.processPage(page);
+			fichas.addAll(fichasTmp);
+		}
+
+		if (runPeerflix.isRunning()) {
+			response.append("<a href=\"http://").append(getInternalIP())
+					.append(":1234\" vod>Ver ")
+					.append(runPeerflix.getFicha().getNombre())
+					.append("</a><br><br>");
+		}
+
+		response.append(getCategories());
+		
+		response.append("<table>");
+		int col = 0;
+		int i = 0;
+		for (Ficha ficha : fichas) {
+			if (ficha != null) {
+				if (col == 0) {
+					response.append("<tr>");
+				}
+				response.append("<td><img src=\"").append(ficha.getImagen())
+						.append("\" border=\"0\"><br>")
+						.append("<a href=\"./torrent?").append(i).append("\">")
+						.append(ficha.getNombre()).append("</a>").append("<td>");
+				col++;
+				i++;
+				if (col == 8) {
+					response.append("</tr>");
+					col = 0;
+				}
+			}
+		}
+		response.append("</table>");
+
+		return response.toString();
+	}
+	
 	private String tryListPCH(int type) {
 		StringBuilder response = new StringBuilder();
 
@@ -176,8 +220,6 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 			fichas.addAll(fichasTmp);
 		}
 
-		int col = 0;
-		int i = 0;
 		response.append(getHtmlHeader());
 		if (runPeerflix.isRunning()) {
 			response.append("<a href=\"http://").append(getInternalIP())
@@ -185,27 +227,24 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 					.append(runPeerflix.getFicha().getNombre())
 					.append("</a><br><br>");
 		}
-		response.append("<a href=\"./listpch\">Todos</a><br>");
-		response.append("<a href=\"./estrenospch\">Estrenos</a><br>");
-		response.append("<a href=\"./peliculaspch\">Peliculas</a><br>");
-		response.append("<a href=\"./hdrippch\">HDRIP</a><br>");
-		response.append("<a href=\"./microhdpch\">MicroHD</a><br>");
-		response.append("<a href=\"./seriespch\">Series</a><br>");
-		response.append("<a href=\"./docusytvpch\">Documentales y TV</a><br>");
-		response.append("<br>");
+		response.append(getCategoriesPCH());
 		response.append("<table>");
+		int col = 0;
+		int i = 0;
 		for (Ficha ficha : fichas) {
-			if (col == 0) {
-				response.append("<tr>");
-			}
-			response.append("<td>")
-					.append("<a href=\"./torrent?").append(i).append("\">")
-					.append(ficha.getNombre()).append("</a>").append("<td>");
-			col++;
-			i++;
-			if (col == 4) {
-				response.append("</tr>");
-				col = 0;
+			if (ficha != null) {
+				if (col == 0) {
+					response.append("<tr>");
+				}
+				response.append("<td>")
+						.append("<a href=\"./torrent?").append(i).append("\">")
+						.append(ficha.getNombre()).append("</a>").append("<td>");
+				col++;
+				i++;
+				if (col == 3) {
+					response.append("</tr>");
+					col = 0;
+				}
 			}
 		}
 		response.append("</table>");
@@ -214,24 +253,73 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		return response.toString();
 	}
 
+	private String trySearchPCH(String search) {
+		StringBuilder response = new StringBuilder();
+
+		fichas = new ArrayList<Ficha>();
+		for (int i = 1; i <= 5; i++) {
+			String page = documentsOper.getPageSearch(search, i);
+			List<Ficha> fichasTmp = documentsOper.processPage(page);
+			fichas.addAll(fichasTmp);
+		}
+
+		response.append(getHtmlHeader());
+		if (runPeerflix.isRunning()) {
+			response.append("<a href=\"http://").append(getInternalIP())
+					.append(":1234\" vod>Ver ")
+					.append(runPeerflix.getFicha().getNombre())
+					.append("</a><br><br>");
+		}
+		response.append(getCategoriesPCH());
+		response.append("<table>");
+		int col = 0;
+		int i = 0;
+		for (Ficha ficha : fichas) {
+			if (ficha != null) {
+				if (col == 0) {
+					response.append("<tr>");
+				}
+				response.append("<td>")
+						.append("<a href=\"./torrent?").append(i).append("\">")
+						.append(ficha.getNombre()).append("</a>").append("<td>");
+				col++;
+				i++;
+				if (col == 3) {
+					response.append("</tr>");
+					col = 0;
+				}
+			}
+		}
+		response.append("</table>");
+		response.append(getHtmlFooter());
+
+		return response.toString();
+	}
+	
 	private String tryDetail() {
 		return "detail";
 	}
 
 	private String tryTorrent(String index) {
-		String response = "";
+		StringBuilder response = new StringBuilder();
 		int i = Integer.valueOf(index);
 		if (fichas.get(i).getTorrent() == null) {
-			String torrent = documentsOper.getTorrent(fichas.get(i).getUrl());
-			fichas.get(i).setTorrent(torrent);
+			documentsOper.getTorrent(fichas.get(i));
 		}
 		runPeerflix.run(fichas.get(i));
 
-		response = "<img src=\"" + fichas.get(i).getImagen() + "\" border=\"0\"><br>";
-		response += "<a href=\"http://" + getInternalIP()
-				+ ":1234\" vod>ver</a>";
+		response.append("<table><tr>");
+		response.append("<td><img src=\"")
+			.append(fichas.get(i).getImagen())
+			.append("\" border=\"0\"></td>");
+		response.append("<td>")
+			.append(fichas.get(i).getDetails())
+			.append("</td></tr></table>");
+		response.append("<br><br><a href=\"http://")
+			.append(getInternalIP())
+			.append(":1234\" vod>Ver ").append(fichas.get(i).getNombre()).append("</a>");
 
-		return response;
+		return response.toString();
 	}
 
 	private String getInternalIP() {
@@ -281,6 +369,40 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 			.append("</html>");
 		return footer.toString();
 
+	}
+	
+	private String getCategoriesPCH() {
+		StringBuilder response = new StringBuilder();
+		
+		response.append("<a href=\"./listpch\">Todos</a><br>");
+		response.append("<a href=\"./estrenospch\">Estrenos</a><br>");
+		response.append("<a href=\"./peliculaspch\">Peliculas</a><br>");
+		response.append("<a href=\"./hdrippch\">HDRIP</a><br>");
+		response.append("<a href=\"./microhdpch\">MicroHD</a><br>");
+		response.append("<a href=\"./seriespch\">Series</a><br>");
+		response.append("<a href=\"./docusytvpch\">Documentales y TV</a><br>");
+		response.append("<a href=\"./searchpch?banshee\">Banshee</a><br>");
+		response.append("<a href=\"./searchpch?big+bang\">Big Bang Theory</a><br>");
+		response.append("<br>");
+		
+		return response.toString();
+	}
+
+	private String getCategories() {
+		StringBuilder response = new StringBuilder();
+		
+		response.append("<a href=\"./list\">Todos</a><br>");
+		response.append("<a href=\"./estrenos\">Estrenos</a><br>");
+		response.append("<a href=\"./peliculas\">Peliculas</a><br>");
+		response.append("<a href=\"./hdrip\">HDRIP</a><br>");
+		response.append("<a href=\"./microhd\">MicroHD</a><br>");
+		response.append("<a href=\"./series\">Series</a><br>");
+		response.append("<a href=\"./docusytv\">Documentales y TV</a><br>");
+		response.append("<a href=\"./search?banshee\">Banshee</a><br>");
+		response.append("<a href=\"./search?big+bang\">Big Bang Theory</a><br>");
+		response.append("<br>");
+		
+		return response.toString();
 	}
 
 }

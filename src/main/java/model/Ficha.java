@@ -6,12 +6,14 @@ public class Ficha {
 	private String url;
 	private String imagen;
 	private String torrent;
+	private String details;
 	
 	public Ficha() {
 		this.nombre = null;
 		this.url = null;
 		this.imagen = null;
 		this.torrent = null;
+		this.setDetails(null);
 	}
 	
 	public String getNombre() {
@@ -44,6 +46,14 @@ public class Ficha {
 
 	public void setTorrent(String torrent) {
 		this.torrent = torrent;
+	}
+
+	public String getDetails() {
+		return details;
+	}
+
+	public void setDetails(String details) {
+		this.details = details;
 	}	
 	
 }

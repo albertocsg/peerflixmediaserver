@@ -96,14 +96,53 @@ public class DocumentsOperElite implements IDocumentsOper {
 		return fichas;
 	}
 	
-	public String getTorrent(String url) {
+	public void getTorrent(Ficha ficha) {
+		if (ficha == null) {
+			return;
+		}
+		
 		try {
 			
-			Document doc = Jsoup.parse(new URL(url), 10000);
+			Document doc = Jsoup.parse(new URL(ficha.getUrl()), 10000);
 			String magnet = doc.getElementsByClass("enlace_torrent").get(1).attr("href");
+			String details = doc.getElementsByClass("detalles").get(0).html();
+			System.out.println(details);
 			
-			return magnet;
+			ficha.setTorrent(magnet);
+			ficha.setDetails(details);
 			
+			
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public String getPageSearch(String search, int page) {
+		StringBuilder document = new StringBuilder();
+		try {
+			
+			URL url = null;
+			String searchText = search;
+			searchText.replace(" ", "+");
+			
+			url = new URL("http://www.elitetorrent.net/busqueda/" + searchText + "/pag:" + page);
+			
+			URLConnection conn = url.openConnection();
+			BufferedReader entrada = new BufferedReader( new InputStreamReader(conn.getInputStream()));
+			
+			String linea;
+			
+			while ((linea = entrada.readLine()) != null) {
+				document.append(linea);
+			}
+
+			entrada.close();
 			
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
@@ -113,7 +152,8 @@ public class DocumentsOperElite implements IDocumentsOper {
 			e.printStackTrace();
 		}
 		
-		return null;
+		return document.toString();
+		
 	}
 	
 }

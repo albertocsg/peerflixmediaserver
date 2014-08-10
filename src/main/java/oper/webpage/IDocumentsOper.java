@@ -8,8 +8,10 @@ public interface IDocumentsOper {
 
 	public String getPageURL(int type, int page);
 	
+	public String getPageSearch(String search, int page);
+	
 	public List<Ficha> processPage(String page);
 	
-	public String getTorrent(String url);
+	public void getTorrent(Ficha ficha);
 	
 }
