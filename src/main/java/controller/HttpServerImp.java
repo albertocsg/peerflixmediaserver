@@ -37,10 +37,14 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 
 	@Autowired
 	private IRunPeerflix runPeerflix;
-	
+
 	@Autowired
 	@Qualifier("configImp")
 	private IConfig config;
+
+	enum HTMLTYPE {
+		NORMAL, POPCORNHOUR
+	}
 
 	/**
 	 * Constructor
@@ -50,10 +54,11 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 
 	public void init() {
 		try {
-			
+
 			String httpPort = config.getValue(Keys.PORT);
 
-			httpServer = HttpServer.create(new InetSocketAddress(Integer.valueOf(httpPort).intValue()), 0);
+			httpServer = HttpServer.create(new InetSocketAddress(Integer
+					.valueOf(httpPort).intValue()), 0);
 			httpServer.createContext("/", this);
 			httpServer.setExecutor(null);
 			httpServer.start();
@@ -74,45 +79,44 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		String search = null;
 
 		if (exchange.getRequestURI().getPath().equals("/list")) {
-			response = tryList(0);
+			response = tryList(0, HTMLTYPE.NORMAL);
 		} else if (exchange.getRequestURI().getPath().equals("/estrenos")) {
-			response = tryList(1);
+			response = tryList(1, HTMLTYPE.NORMAL);
 		} else if (exchange.getRequestURI().getPath().equals("/peliculas")) {
-			response = tryList(2);
+			response = tryList(2, HTMLTYPE.NORMAL);
 		} else if (exchange.getRequestURI().getPath().equals("/hdrip")) {
-			response = tryList(3);
+			response = tryList(3, HTMLTYPE.NORMAL);
 		} else if (exchange.getRequestURI().getPath().equals("/microhd")) {
-			response = tryList(4);
+			response = tryList(4, HTMLTYPE.NORMAL);
 		} else if (exchange.getRequestURI().getPath().equals("/series")) {
-			response = tryList(5);
+			response = tryList(5, HTMLTYPE.NORMAL);
 		} else if (exchange.getRequestURI().getPath().equals("/docusytv")) {
-			response = tryList(6);
+			response = tryList(6, HTMLTYPE.NORMAL);
 		} else if (exchange.getRequestURI().getPath().equals("/search")) {
 			search = exchange.getRequestURI().getQuery();
-			response = trySearch(search);
+			response = trySearch(search, HTMLTYPE.NORMAL);
 		} else if (exchange.getRequestURI().getPath().equals("/listpch")) {
-			response = tryListPCH(0);
+			response = tryList(0, HTMLTYPE.POPCORNHOUR);
 		} else if (exchange.getRequestURI().getPath().equals("/estrenospch")) {
-			response = tryListPCH(1);
+			response = tryList(1, HTMLTYPE.POPCORNHOUR);
 		} else if (exchange.getRequestURI().getPath().equals("/peliculaspch")) {
-			response = tryListPCH(2);
+			response = tryList(2, HTMLTYPE.POPCORNHOUR);
 		} else if (exchange.getRequestURI().getPath().equals("/hdrippch")) {
-			response = tryListPCH(3);
+			response = tryList(3, HTMLTYPE.POPCORNHOUR);
 		} else if (exchange.getRequestURI().getPath().equals("/microhdpch")) {
-			response = tryListPCH(4);
+			response = tryList(4, HTMLTYPE.POPCORNHOUR);
 		} else if (exchange.getRequestURI().getPath().equals("/seriespch")) {
-			response = tryListPCH(5);
+			response = tryList(5, HTMLTYPE.POPCORNHOUR);
 		} else if (exchange.getRequestURI().getPath().equals("/docusytvpch")) {
-			response = tryListPCH(6);
+			response = tryList(6, HTMLTYPE.POPCORNHOUR);
 		} else if (exchange.getRequestURI().getPath().equals("/searchpch")) {
 			search = exchange.getRequestURI().getQuery();
-			response = trySearchPCH(search);
+			response = trySearch(search, HTMLTYPE.POPCORNHOUR);
 		} else if (exchange.getRequestURI().getPath().equals("/detail")) {
 			response = tryDetail();
 		} else if (exchange.getRequestURI().getPath().equals("/torrent")) {
-			response = tryTorrent(exchange.getRequestURI().getQuery());
-		} else if (exchange.getRequestURI().getPath().equals("/test")) {
-			response = testBootstrap();
+			response = tryTorrent(exchange.getRequestURI().getQuery(),
+					HTMLTYPE.NORMAL);
 		} else {
 			response = "Página no encontrada...";
 		}
@@ -126,200 +130,60 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		out.close();
 	}
 
-	private String tryList(int type) {
+	private String tryList(int type, HTMLTYPE htmlType) {
 		StringBuilder response = new StringBuilder();
 
 		fichas = new ArrayList<Ficha>();
-		for (int i = 1; i <= 5; i++) {
-			String page = documentsOper.getPageURL(type,i);
+		for (int i = 1; i <= 10; i++) {
+			String page = documentsOper.getPageURL(type, i);
 			List<Ficha> fichasTmp = documentsOper.processPage(page);
 			fichas.addAll(fichasTmp);
 		}
 
-		if (runPeerflix.isRunning()) {
-			response.append("<a href=\"http://").append(getInternalIP())
-					.append(":1234\" vod>Ver ")
-					.append(runPeerflix.getFicha().getNombre())
-					.append("</a><br><br>");
-		}
-
-		response.append(getCategories());
-		
-		response.append("<table>");
-		int col = 0;
-		int i = 0;
-		for (Ficha ficha : fichas) {
-			if (col == 0) {
-				response.append("<tr>");
-			}
-			response.append("<td><img src=\"").append(ficha.getImagen())
-					.append("\" border=\"0\"><br>")
-					.append("<a href=\"./torrent?").append(i).append("\">")
-					.append(ficha.getNombre()).append("</a>").append("<td>");
-			col++;
-			i++;
-			if (col == 8) {
-				response.append("</tr>");
-				col = 0;
-			}
-		}
-		response.append("</table>");
+		response.append(prepareList(fichas, htmlType));
 
 		return response.toString();
 	}
-	
-	private String trySearch(String search) {
+
+	private String trySearch(String search, HTMLTYPE htmlType) {
 		StringBuilder response = new StringBuilder();
 
 		fichas = new ArrayList<Ficha>();
-		for (int i = 1; i <= 5; i++) {
+		for (int i = 1; i <= 10; i++) {
 			String page = documentsOper.getPageSearch(search, i);
 			List<Ficha> fichasTmp = documentsOper.processPage(page);
 			fichas.addAll(fichasTmp);
 		}
 
-		if (runPeerflix.isRunning()) {
-			response.append("<a href=\"http://").append(getInternalIP())
-					.append(":1234\" vod>Ver ")
-					.append(runPeerflix.getFicha().getNombre())
-					.append("</a><br><br>");
-		}
-
-		response.append(getCategories());
-		
-		response.append("<table>");
-		int col = 0;
-		int i = 0;
-		for (Ficha ficha : fichas) {
-			if (ficha != null) {
-				if (col == 0) {
-					response.append("<tr>");
-				}
-				response.append("<td><img src=\"").append(ficha.getImagen())
-						.append("\" border=\"0\"><br>")
-						.append("<a href=\"./torrent?").append(i).append("\">")
-						.append(ficha.getNombre()).append("</a>").append("<td>");
-				col++;
-				i++;
-				if (col == 8) {
-					response.append("</tr>");
-					col = 0;
-				}
-			}
-		}
-		response.append("</table>");
-
-		return response.toString();
-	}
-	
-	private String tryListPCH(int type) {
-		StringBuilder response = new StringBuilder();
-
-		fichas = new ArrayList<Ficha>();
-		for (int i = 1; i <= 5; i++) {
-			String page = documentsOper.getPageURL(type,i);
-			List<Ficha> fichasTmp = documentsOper.processPage(page);
-			fichas.addAll(fichasTmp);
-		}
-
-		response.append(getHtmlHeader());
-		if (runPeerflix.isRunning()) {
-			response.append("<a href=\"http://").append(getInternalIP())
-					.append(":1234\" vod>Ver ")
-					.append(runPeerflix.getFicha().getNombre())
-					.append("</a><br><br>");
-		}
-		response.append(getCategoriesPCH());
-		response.append("<table>");
-		int col = 0;
-		int i = 0;
-		for (Ficha ficha : fichas) {
-			if (ficha != null) {
-				if (col == 0) {
-					response.append("<tr>");
-				}
-				response.append("<td>")
-						.append("<a href=\"./torrent?").append(i).append("\">")
-						.append(ficha.getNombre()).append("</a>").append("<td>");
-				col++;
-				i++;
-				if (col == 3) {
-					response.append("</tr>");
-					col = 0;
-				}
-			}
-		}
-		response.append("</table>");
-		response.append(getHtmlFooter());
+		response.append(prepareList(fichas, htmlType));
 
 		return response.toString();
 	}
 
-	private String trySearchPCH(String search) {
-		StringBuilder response = new StringBuilder();
-
-		fichas = new ArrayList<Ficha>();
-		for (int i = 1; i <= 5; i++) {
-			String page = documentsOper.getPageSearch(search, i);
-			List<Ficha> fichasTmp = documentsOper.processPage(page);
-			fichas.addAll(fichasTmp);
-		}
-
-		response.append(getHtmlHeader());
-		if (runPeerflix.isRunning()) {
-			response.append("<a href=\"http://").append(getInternalIP())
-					.append(":1234\" vod>Ver ")
-					.append(runPeerflix.getFicha().getNombre())
-					.append("</a><br><br>");
-		}
-		response.append(getCategoriesPCH());
-		response.append("<table>");
-		int col = 0;
-		int i = 0;
-		for (Ficha ficha : fichas) {
-			if (ficha != null) {
-				if (col == 0) {
-					response.append("<tr>");
-				}
-				response.append("<td>")
-						.append("<a href=\"./torrent?").append(i).append("\">")
-						.append(ficha.getNombre()).append("</a>").append("<td>");
-				col++;
-				i++;
-				if (col == 3) {
-					response.append("</tr>");
-					col = 0;
-				}
-			}
-		}
-		response.append("</table>");
-		response.append(getHtmlFooter());
-
-		return response.toString();
-	}
-	
 	private String tryDetail() {
 		return "detail";
 	}
 
-	private String tryTorrent(String index) {
+	private String tryTorrent(String index, HTMLTYPE type) {
 		StringBuilder response = new StringBuilder();
 		int i = Integer.valueOf(index);
+
 		if (fichas.get(i).getTorrent() == null) {
 			documentsOper.getTorrent(fichas.get(i));
 		}
+
 		runPeerflix.run(fichas.get(i));
 
+		response.append(getHtmlHeader(type));
 		response.append("<table><tr>");
-		response.append("<td><img src=\"")
-			.append(fichas.get(i).getImagen())
-			.append("\" border=\"0\"></td>");
-		response.append("<td>")
-			.append(fichas.get(i).getDetails())
-			.append("</td></tr></table>");
-		response.append("<br><br><a href=\"http://")
-			.append(getInternalIP())
-			.append(":1234\" vod>Ver ").append(fichas.get(i).getNombre()).append("</a>");
+		response.append("<td><img src=\"").append(fichas.get(i).getImagen())
+				.append("\" border=\"0\"></td>");
+		response.append("<td>").append(fichas.get(i).getDetails())
+				.append("</td></tr></table>");
+		response.append("<br><br><a href=\"http://").append(getInternalIP())
+				.append(":1234\" vod>Ver ").append(fichas.get(i).getNombre())
+				.append("</a>");
+		response.append(getHtmlFooter());
 
 		return response.toString();
 	}
@@ -353,107 +217,117 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 
 		return ip;
 	}
-	
-	private String getHtmlHeader() {
+
+	private String getHtmlHeader(HTMLTYPE type) {
 		StringBuilder header = new StringBuilder();
-		header.append("<html>")
-			.append("<head>")
-			.append("<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">")
-			.append("<meta SYABAS-FULLSCREEN>")
-			.append("</head>")
-			.append("<body bgcolor=\"#111111\" text=\"#f0f8ff\" link=\"#f0f8ff\" alink=\"#ffd700\">");
+		if (type == HTMLTYPE.NORMAL) {
+			header.append("<html>")
+					.append("<head>")
+					.append("<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">")
+					.append("</head>")
+					.append("<body bgcolor=\"#5CACE5\" text=\"#f0f8ff\" link=\"#f0f8ff\" alink=\"#ffd700\">");
+		} else {
+			header.append("<html>")
+					.append("<head>")
+					.append("<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">")
+					.append("<meta SYABAS-FULLSCREEN>")
+					.append("</head>")
+					.append("<body bgcolor=\"#5CACE5\" text=\"#f0f8ff\" link=\"#f0f8ff\" alink=\"#ffd700\">");
+		}
 		return header.toString();
 	}
-	
+
 	private String getHtmlFooter() {
 		StringBuilder footer = new StringBuilder();
-		footer.append("</body>")
-			.append("</html>");
+		footer.append("</body>").append("</html>");
 		return footer.toString();
 
 	}
-	
-	private String getCategoriesPCH() {
+
+	private String getCategories(HTMLTYPE type) {
 		StringBuilder response = new StringBuilder();
-		
-		response.append("<a href=\"./test\">Test Bootstrap</a><br>");
-		response.append("<a href=\"./listpch\">Todos</a><br>");
-		response.append("<a href=\"./estrenospch\">Estrenos</a><br>");
-		response.append("<a href=\"./peliculaspch\">Peliculas</a><br>");
-		response.append("<a href=\"./hdrippch\">HDRIP</a><br>");
-		response.append("<a href=\"./microhdpch\">MicroHD</a><br>");
-		response.append("<a href=\"./seriespch\">Series</a><br>");
-		response.append("<a href=\"./docusytvpch\">Documentales y TV</a><br>");
-		response.append("<a href=\"./searchpch?banshee\">Banshee</a><br>");
-		response.append("<a href=\"./searchpch?big+bang\">Big Bang Theory</a><br>");
+
+		if (type == HTMLTYPE.NORMAL) {
+			response.append("<a href=\"./list\">Todos</a><br>");
+			response.append("<a href=\"./estrenos\">Estrenos</a><br>");
+			response.append("<a href=\"./peliculas\">Peliculas</a><br>");
+			response.append("<a href=\"./hdrip\">HDRIP</a><br>");
+			response.append("<a href=\"./microhd\">MicroHD</a><br>");
+			response.append("<a href=\"./series\">Series</a><br>");
+			response.append("<a href=\"./docusytv\">Documentales y TV</a><br>");
+			response.append("<a href=\"./search?banshee\">Banshee</a><br>");
+			response.append("<a href=\"./search?big+bang\">Big Bang Theory</a><br>");
+		} else {
+			response.append("<a href=\"./listpch\">Todos</a><br>");
+			response.append("<a href=\"./estrenospch\">Estrenos</a><br>");
+			response.append("<a href=\"./peliculaspch\">Peliculas</a><br>");
+			response.append("<a href=\"./hdrippch\">HDRIP</a><br>");
+			response.append("<a href=\"./microhdpch\">MicroHD</a><br>");
+			response.append("<a href=\"./seriespch\">Series</a><br>");
+			response.append("<a href=\"./docusytvpch\">Documentales y TV</a><br>");
+			response.append("<a href=\"./searchpch?banshee\">Banshee</a><br>");
+			response.append("<a href=\"./searchpch?big+bang\">Big Bang Theory</a><br>");
+		}
+
 		response.append("<br>");
-		
+
 		return response.toString();
 	}
 
-	private String getCategories() {
+	private String prepareList(List<Ficha> fichas, HTMLTYPE type) {
 		StringBuilder response = new StringBuilder();
-		
-		response.append("<a href=\"./test\">Test Bootstrap</a><br>");
-		response.append("<a href=\"./list\">Todos</a><br>");
-		response.append("<a href=\"./estrenos\">Estrenos</a><br>");
-		response.append("<a href=\"./peliculas\">Peliculas</a><br>");
-		response.append("<a href=\"./hdrip\">HDRIP</a><br>");
-		response.append("<a href=\"./microhd\">MicroHD</a><br>");
-		response.append("<a href=\"./series\">Series</a><br>");
-		response.append("<a href=\"./docusytv\">Documentales y TV</a><br>");
-		response.append("<a href=\"./search?banshee\">Banshee</a><br>");
-		response.append("<a href=\"./search?big+bang\">Big Bang Theory</a><br>");
-		response.append("<br>");
-		
-		return response.toString();
-	}
-	
-	private String testBootstrap() {
-		StringBuilder page = new StringBuilder();
+		int maxColumns = 8;
 
-		page.append("	<!DOCTYPE html>");
-		page.append("		<html lang=\"en\">");
-		page.append("		  <head>");
-		page.append("		    <meta charset=\"utf-8\">");
-		page.append("		    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">");
-		page.append("		    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
-		page.append("		    <title>Starter Template for Bootstrap</title>");
-		page.append("		    <!-- Bootstrap core CSS -->");
-		page.append("		    <link href=\"http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css\" rel=\"stylesheet\">");
-		page.append("		  </head>");
-		page.append("		  <body>");
-		page.append("		    <div class=\"navbar navbar-inverse navbar-fixed-top\" role=\"navigation\">");
-		page.append("		      <div class=\"container\">");
-		page.append("		        <div class=\"navbar-header\">");
-		page.append("		          <button type=\"button\" class=\"navbar-toggle\" data-toggle=\"collapse\" data-target=\".navbar-collapse\">");
-		page.append("		            <span class=\"sr-only\">Toggle navigation</span>");
-		page.append("		            <span class=\"icon-bar\"></span>");
-		page.append("		            <span class=\"icon-bar\"></span>");
-		page.append("		            <span class=\"icon-bar\"></span>");
-		page.append("		          </button>");
-		page.append("		          <a class=\"navbar-brand\" href=\"#\">Project name</a>");
-		page.append("		        </div>");
-		page.append("		        <div class=\"collapse navbar-collapse\">");
-		page.append("		          <ul class=\"nav navbar-nav\">");
-		page.append("		            <li class=\"active\"><a href=\"#\">Home</a></li>");
-		page.append("		            <li><a href=\"#about\">About</a></li>");
-		page.append("		            <li><a href=\"#contact\">Contact</a></li>");
-		page.append("		          </ul>");
-		page.append("		        </div><!--/.nav-collapse -->");
-		page.append("		      </div>");
-		page.append("		    </div>");
-		page.append("		    <div class=\"container\">");
-		page.append("		      <div class=\"starter-template\">");
-		page.append("		        <h1>Bootstrap starter template</h1>");
-		page.append("		        <p class=\"lead\">Use this document as a way to quickly start any new project.<br> All you get is this text and a mostly barebones HTML document.</p>");
-		page.append("		      </div>");
-		page.append("		    </div><!-- /.container -->");
-		page.append("		  </body>");
-		page.append("		</html>");
-		
-		
-		return page.toString(); 
+		if (type == HTMLTYPE.POPCORNHOUR) {
+			maxColumns = 3;
+		}
+
+		response.append(getHtmlHeader(type));
+
+		if (runPeerflix.isRunning()) {
+			response.append("<a href=\"http://").append(getInternalIP())
+					.append(":1234\"");
+			if (type == HTMLTYPE.POPCORNHOUR) {
+				response.append(" vod");
+			}
+			response.append(">Ver ").append(runPeerflix.getFicha().getNombre())
+					.append("</a><br><br>");
+		}
+
+		response.append(getCategories(type));
+
+		response.append("<table>");
+		int col = 0;
+		int i = 0;
+		for (Ficha ficha : fichas) {
+			if (ficha != null) {
+				if (col == 0) {
+					response.append("<tr>");
+				}
+				if (type == HTMLTYPE.POPCORNHOUR) {
+					response.append("<td>").append("<a href=\"./torrent?")
+							.append(i).append("\">").append(ficha.getNombre())
+							.append("</a>").append("<td>");
+				} else {
+					response.append("<td><img src=\"")
+							.append(ficha.getImagen())
+							.append("\" border=\"0\"><br>")
+							.append("<a href=\"./torrent?").append(i)
+							.append("\">").append(ficha.getNombre())
+							.append("</a>").append("<td>");
+				}
+				col++;
+				i++;
+				if (col == maxColumns) {
+					response.append("</tr>");
+					col = 0;
+				}
+			}
+		}
+		response.append("</table>");
+		response.append(getHtmlFooter());
+
+		return response.toString();
 	}
 
 }
