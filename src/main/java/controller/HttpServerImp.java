@@ -32,9 +32,11 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 	private List<Ficha> fichas = null;
 
 	@Autowired
-	@Qualifier("documentsOperElite")
-	private IDocumentsOper documentsOper;
+	private IDocumentsOper documentsOperElite;
 
+	@Autowired
+	private IDocumentsOper documentsOperDivxTotal;
+	
 	@Autowired
 	private IRunPeerflix runPeerflix;
 
@@ -42,15 +44,15 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 	@Qualifier("configImp")
 	private IConfig config;
 
-	enum HTMLTYPE {
-		NORMAL, POPCORNHOUR
-	}
-
 	private int numPage = 1;
 	private String searchPage = "";
 	private int typePage = 0;
-	private HTMLTYPE htmlType = HTMLTYPE.NORMAL;
 	private int elementsPerPage = 16;
+	
+	enum SOURCE {
+		ELITETORRENT,
+		DIVXTOTAL
+	}
 
 	/**
 	 * Constructor
@@ -84,92 +86,47 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		String response = null;
 
 		if (exchange.getRequestURI().getPath().equals("/list")) {
-			numPage = 1;
+			numPage = 0;
 			typePage = 0;
-			htmlType = HTMLTYPE.NORMAL;
-			response = tryList();
+			response = tryList(SOURCE.ELITETORRENT);
 		} else if (exchange.getRequestURI().getPath().equals("/estrenos")) {
-			numPage = 1;
+			numPage = 0;
 			typePage = 1;
-			htmlType = HTMLTYPE.NORMAL;
-			response = tryList();
+			response = tryList(SOURCE.ELITETORRENT);
 		} else if (exchange.getRequestURI().getPath().equals("/peliculas")) {
-			numPage = 1;
+			numPage = 0;
 			typePage = 2;
-			htmlType = HTMLTYPE.NORMAL;
-			response = tryList();
+			response = tryList(SOURCE.ELITETORRENT);
 		} else if (exchange.getRequestURI().getPath().equals("/hdrip")) {
-			numPage = 1;
+			numPage = 0;
 			typePage = 3;
-			htmlType = HTMLTYPE.NORMAL;
-			response = tryList();
+			response = tryList(SOURCE.ELITETORRENT);
 		} else if (exchange.getRequestURI().getPath().equals("/microhd")) {
-			numPage = 1;
+			numPage = 0;
 			typePage = 4;
-			htmlType = HTMLTYPE.NORMAL;
-			response = tryList();
+			response = tryList(SOURCE.ELITETORRENT);
 		} else if (exchange.getRequestURI().getPath().equals("/series")) {
-			numPage = 1;
+			numPage = 0;
 			typePage = 5;
-			htmlType = HTMLTYPE.NORMAL;
-			response = tryList();
+			response = tryList(SOURCE.ELITETORRENT);
 		} else if (exchange.getRequestURI().getPath().equals("/docusytv")) {
-			numPage = 1;
+			numPage = 0;
 			typePage = 6;
-			htmlType = HTMLTYPE.NORMAL;
-			response = tryList();
+			response = tryList(SOURCE.ELITETORRENT);
 		} else if (exchange.getRequestURI().getPath().equals("/search")) {
-			numPage = 1;
+			numPage = 0;
 			typePage = 10;
-			htmlType = HTMLTYPE.NORMAL;
 			searchPage = exchange.getRequestURI().getQuery();
 			response = trySearch();
-		} else if (exchange.getRequestURI().getPath().equals("/listpch")) {
-			numPage = 1;
-			typePage = 0;
-			htmlType = HTMLTYPE.POPCORNHOUR;
-			response = tryList();
-		} else if (exchange.getRequestURI().getPath().equals("/estrenospch")) {
-			numPage = 1;
-			typePage = 1;
-			htmlType = HTMLTYPE.POPCORNHOUR;
-			response = tryList();
-		} else if (exchange.getRequestURI().getPath().equals("/peliculaspch")) {
-			numPage = 1;
-			typePage = 2;
-			htmlType = HTMLTYPE.POPCORNHOUR;
-			response = tryList();
-		} else if (exchange.getRequestURI().getPath().equals("/hdrippch")) {
-			numPage = 1;
-			typePage = 3;
-			htmlType = HTMLTYPE.POPCORNHOUR;
-			response = tryList();
-		} else if (exchange.getRequestURI().getPath().equals("/microhdpch")) {
-			numPage = 1;
-			typePage = 4;
-			htmlType = HTMLTYPE.POPCORNHOUR;
-			response = tryList();
-		} else if (exchange.getRequestURI().getPath().equals("/seriespch")) {
-			numPage = 1;
-			typePage = 5;
-			htmlType = HTMLTYPE.POPCORNHOUR;
-			response = tryList();
-		} else if (exchange.getRequestURI().getPath().equals("/docusytvpch")) {
-			numPage = 1;
-			typePage = 6;
-			htmlType = HTMLTYPE.POPCORNHOUR;
-			response = tryList();
 		} else if (exchange.getRequestURI().getPath().equals("/searchpch")) {
-			numPage = 1;
+			numPage = 0;
 			typePage = 10;
-			htmlType = HTMLTYPE.POPCORNHOUR;
 			searchPage = exchange.getRequestURI().getQuery();
 			response = trySearch();
 		} else if (exchange.getRequestURI().getPath().equals("/detail")) {
 			response = tryDetail();
 		} else if (exchange.getRequestURI().getPath().equals("/torrent")) {
-			response = tryTorrent(exchange.getRequestURI().getQuery(),
-					HTMLTYPE.NORMAL);
+			response = tryTorrent(exchange.getRequestURI().getQuery());
 		} else if (exchange.getRequestURI().getPath().equals("/next")) {
 			response = tryNext();
 		} else if (exchange.getRequestURI().getPath().equals("/back")) {
@@ -187,23 +144,34 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		out.close();
 	}
 
-	private String tryList() {
+	private String tryList(SOURCE source) {
 		StringBuilder response = new StringBuilder();
 		List<Ficha> fichasTmp;
+		String page;
 		
 		// If it's the first page, the refill the list of fichas
-		if (numPage == 1) {
+		if (numPage == 0) {
 			fichas = new ArrayList<Ficha>();
 			for (int i = 1; i <= 10; i++) {
-				String page = documentsOper.getPageURL(typePage, i);
-				fichasTmp = documentsOper.processPage(page);
+				fichasTmp = null;
+				switch (source) {
+					case ELITETORRENT:
+						page = documentsOperElite.getPageURL(typePage, i);
+						fichasTmp = documentsOperElite.processPage(page);
+						break;
+					case DIVXTOTAL:
+						page = documentsOperDivxTotal.getPageURL(typePage, i);
+						fichasTmp = documentsOperDivxTotal.processPage(page);
+						break;
+				}
 				fichas.addAll(fichasTmp);
 			}
+			numPage = 1;
 		}
 		
 		fichasTmp = getSelectedElementsByPage();
 		
-		response.append(prepareList(fichasTmp, htmlType));
+		response.append(prepareList(fichasTmp));
 
 		return response.toString();
 	}
@@ -216,15 +184,15 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		if (numPage == 1) {
 			fichas = new ArrayList<Ficha>();
 			for (int i = 1; i <= 10; i++) {
-				String page = documentsOper.getPageSearch(searchPage, i);
-				fichasTmp = documentsOper.processPage(page);
+				String page = documentsOperElite.getPageSearch(searchPage, i);
+				fichasTmp = documentsOperElite.processPage(page);
 				fichas.addAll(fichasTmp);
 			}
 		}
 
 		fichasTmp = getSelectedElementsByPage();
 		
-		response.append(prepareList(fichasTmp, htmlType));
+		response.append(prepareList(fichasTmp));
 
 		return response.toString();
 	}
@@ -233,18 +201,18 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		return "detail";
 	}
 
-	private String tryTorrent(String index, HTMLTYPE type) {
+	private String tryTorrent(String index) {
 		StringBuilder response = new StringBuilder();
 		int i = Integer.valueOf(index);
 		i = i + ((numPage - 1) * elementsPerPage);
 
 		if (fichas.get(i).getTorrent() == null) {
-			documentsOper.getTorrent(fichas.get(i));
+			documentsOperElite.getTorrent(fichas.get(i));
 		}
 
 		runPeerflix.run(fichas.get(i));
 
-		response.append(getHtmlHeader(type));
+		response.append(getHtmlHeader());
 		response.append("<table><tr>");
 		response.append("<td><img src=\"").append(fichas.get(i).getImagen())
 				.append("\" border=\"0\"></td>");
@@ -288,71 +256,46 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		return ip;
 	}
 
-	private String getHtmlHeader(HTMLTYPE type) {
+	private String getHtmlHeader() {
 		StringBuilder header = new StringBuilder();
-		if (type == HTMLTYPE.NORMAL) {
-			header.append("<html>")
-					.append("<head>")
-					.append("<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">")
-					.append("</head>")
-					.append("<body bgcolor=\"#5CACE5\" text=\"#f0f8ff\" link=\"#f0f8ff\" alink=\"#ffd700\">");
-		} else {
-			header.append("<html>")
-					.append("<head>")
-					.append("<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">")
-					.append("<meta SYABAS-FULLSCREEN>")
-					.append("</head>")
-					.append("<body bgcolor=\"#5CACE5\" text=\"#f0f8ff\" link=\"#f0f8ff\" alink=\"#ffd700\">");
-		}
+		header.append("<html>\n")
+				.append("<head>\n")
+				.append("<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n")
+				.append("<meta SYABAS-FULLSCREEN>\n")
+				.append("</head>\n")
+				.append("<body bgcolor=\"#5CACE5\" text=\"#f0f8ff\" link=\"#f0f8ff\" alink=\"#ffd700\">\n");
 		return header.toString();
 	}
 
 	private String getHtmlFooter() {
 		StringBuilder footer = new StringBuilder();
-		footer.append("</body>").append("</html>");
+		footer.append("</body>\n</html>\n");
 		return footer.toString();
 
 	}
 
-	private String getCategories(HTMLTYPE type) {
+	private String getCategories() {
 		StringBuilder response = new StringBuilder();
 
-		if (type == HTMLTYPE.NORMAL) {
-			response.append("<a href=\"./list\">Todos</a><br>");
-			response.append("<a href=\"./estrenos\">Estrenos</a><br>");
-			response.append("<a href=\"./peliculas\">Peliculas</a><br>");
-			response.append("<a href=\"./hdrip\">HDRIP</a><br>");
-			response.append("<a href=\"./microhd\">MicroHD</a><br>");
-			response.append("<a href=\"./series\">Series</a><br>");
-			response.append("<a href=\"./docusytv\">Documentales y TV</a><br>");
-			response.append("<a href=\"./search?banshee\">Banshee</a><br>");
-			response.append("<a href=\"./search?big+bang\">Big Bang Theory</a><br>");
-		} else {
-			response.append("<a href=\"./listpch\">Todos</a><br>");
-			response.append("<a href=\"./estrenospch\">Estrenos</a><br>");
-			response.append("<a href=\"./peliculaspch\">Peliculas</a><br>");
-			response.append("<a href=\"./hdrippch\">HDRIP</a><br>");
-			response.append("<a href=\"./microhdpch\">MicroHD</a><br>");
-			response.append("<a href=\"./seriespch\">Series</a><br>");
-			response.append("<a href=\"./docusytvpch\">Documentales y TV</a><br>");
-			response.append("<a href=\"./searchpch?banshee\">Banshee</a><br>");
-			response.append("<a href=\"./searchpch?big+bang+theory\">Big Bang Theory</a><br>");
-		}
-
-		response.append("<br>");
-
+		response.append("<a href=\"./list\">Todos</a><br>\n");
+		response.append("<a href=\"./estrenos\">Estrenos</a><br>\n");
+		response.append("<a href=\"./peliculas\">Peliculas</a><br>\n");
+		response.append("<a href=\"./hdrip\">HDRIP</a><br>\n");
+		response.append("<a href=\"./microhd\">MicroHD</a><br>\n");
+		response.append("<a href=\"./series\">Series</a><br>\n");
+		response.append("<a href=\"./docusytv\">Documentales y TV</a><br>\n");
+		response.append("<a href=\"./search?banshee\">Banshee</a><br>\n");
+		response.append("<a href=\"./search?big+bang\">Big Bang Theory</a><br>\n");
+		response.append("<br>\n");
+		
 		return response.toString();
 	}
 
-	private String prepareList(List<Ficha> fichas, HTMLTYPE type) {
+	private String prepareList(List<Ficha> fichas) {
 		StringBuilder response = new StringBuilder();
 		int maxColumns = 8;
 
-		if (type == HTMLTYPE.POPCORNHOUR) {
-			maxColumns = 3;
-		}
-
-		response.append(getHtmlHeader(type));
+		response.append(getHtmlHeader());
 
 		if (runPeerflix.isRunning()) {
 			response.append("<a href=\"http://").append(getInternalIP())
@@ -364,7 +307,7 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		response.append("<a href=\"./next\">Siguiente</a> | ");
 		response.append(numPage);
 		response.append(" | <a href=\"./back\">Anterior</a><br><br>");
-		response.append(getCategories(type));
+		response.append(getCategories());
 	
 		if (fichas != null) {
 			response.append("<table>");
@@ -373,29 +316,23 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 			for (Ficha ficha : fichas) {
 				if (ficha != null) {
 					if (col == 0) {
-						response.append("<tr>");
+						response.append("<tr>\n");
 					}
-					if (type == HTMLTYPE.POPCORNHOUR) {
-						response.append("<td>").append("<a href=\"./torrent?")
-								.append(i).append("\">").append(ficha.getNombre())
-								.append("</a>").append("<td>");
-					} else {
-						response.append("<td><img src=\"")
-								.append(ficha.getImagen())
-								.append("\" border=\"0\"><br>")
-								.append("<a href=\"./torrent?").append(i)
-								.append("\">").append(ficha.getNombre())
-								.append("</a>").append("<td>");
-					}
+					response.append("<td><img src=\"")
+							.append(ficha.getImagen())
+							.append("\" border=\"0\"><br>\n")
+							.append("<a href=\"./torrent?").append(i)
+							.append("\">").append(ficha.getNombre())
+							.append("</a>").append("<td>\n");
 					col++;
 					i++;
 					if (col == maxColumns) {
-						response.append("</tr>");
+						response.append("</tr>\n");
 						col = 0;
 					}
 				}
 			}
-			response.append("</table>");
+			response.append("</table>\n");
 		}
 		response.append(getHtmlFooter());
 
@@ -407,7 +344,7 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		if (typePage == 10) {
 			return trySearch();
 		} else {
-			return tryList();
+			return tryList(SOURCE.ELITETORRENT);
 		}
 	}
 	
@@ -419,7 +356,7 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		if (typePage == 10) {
 			return trySearch();
 		} else {
-			return tryList();
+			return tryList(SOURCE.ELITETORRENT);
 		}
 	}
 	
