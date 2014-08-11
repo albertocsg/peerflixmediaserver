@@ -356,11 +356,8 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 
 		if (runPeerflix.isRunning()) {
 			response.append("<a href=\"http://").append(getInternalIP())
-					.append(":1234\"");
-			if (type == HTMLTYPE.POPCORNHOUR) {
-				response.append(" vod");
-			}
-			response.append(">Ver ").append(runPeerflix.getFicha().getNombre())
+					.append(":1234\" vod>Ver ")
+					.append(runPeerflix.getFicha().getNombre())
 					.append("</a><br><br>");
 		}
 
