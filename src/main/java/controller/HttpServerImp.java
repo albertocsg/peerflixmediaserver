@@ -158,7 +158,7 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 			response = tryList(SOURCE.DIVXTOTAL);
 		} else if (exchange.getRequestURI().getPath().equals("/cat_9_2")) {
 			numPage = 0;
-			typePage = 8;
+			typePage = 9;
 			response = tryList(SOURCE.DIVXTOTAL);
 		} else if (exchange.getRequestURI().getPath().equals("/search_2")) {
 			numPage = 0;
@@ -376,12 +376,12 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 					if (col == 0) {
 						response.append("<tr>\n");
 					}
-					response.append("<td><img src=\"")
+					response.append("<td><table><tr><td><img src=\"")
 							.append(ficha.getImagen())
-							.append("\" border=\"0\" width=150 height=222><br>\n")
+							.append("\" border=\"0\" width=120 height=170></td></tr><tr><td>\n")
 							.append("<a href=\"./torrent?").append(i)
 							.append("\">").append(ficha.getNombre())
-							.append("</a>").append("<td>\n");
+							.append("</a></td></tr></table><td>\n");
 					col++;
 					i++;
 					if (col == maxColumns) {

@@ -89,7 +89,9 @@ public class DocumentsOperElite implements IDocumentsOper {
 		for (Element e : elements) {
 			Ficha ficha = new Ficha();
 			ficha.setNombre(e.getElementsByTag("a").get(1).text());
-			ficha.setImagen(e.getElementsByTag("img").get(0).attr("abs:src"));
+			String image = e.getElementsByTag("img").get(0).attr("abs:src");
+			image = image.replace(".jpg", "_g.jpg");
+			ficha.setImagen(image);
 			ficha.setUrl(e.getElementsByTag("a").get(1).attr("abs:href"));
 			fichas.add(ficha);
 		}

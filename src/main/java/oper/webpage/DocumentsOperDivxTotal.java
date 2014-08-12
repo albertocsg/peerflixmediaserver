@@ -89,7 +89,7 @@ public class DocumentsOperDivxTotal implements IDocumentsOper {
 			ficha.setUrl("http://www.divxtotal.com" + e.getElementsByTag("a").get(0).attr("href"));
 
 			String image = e.getElementsByTag("a").get(0).attr("href");
-			image = image.replaceAll("/peliculas/torrent/", "");
+			image = image.replace("/peliculas/torrent/", "");
 			image = image.replace("/", ".");
 			image = "http://www.divxtotal.com/torrents_img/t" + image + "jpg";
 			ficha.setImagen(image);
