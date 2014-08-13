@@ -1,9 +1,7 @@
 package oper.webpage;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -21,64 +19,47 @@ import org.springframework.stereotype.Component;
 public class DocumentsOperElite implements IDocumentsOper {
 
 	public String getPageURL(int typeDoc, int page) {
-		StringBuilder document = new StringBuilder();
-		try {
-			
-			URL url = null;
-			
-			switch (typeDoc) {
-			
-				case 1:	// estrenos
-					url = new URL("http://www.elitetorrent.net/categoria/1/estrenos/pag:" + page);
-					break;
-					
-				case 2: // peliculas
-					url = new URL("http://www.elitetorrent.net/categoria/2/peliculas/pag:" + page);
-					break;
-					
-				case 3: // HDRIP
-					url = new URL("http://www.elitetorrent.net/categoria/13/peliculas-hdrip/pag:" + page);
-					break;
-					
-				case 4: // microHD
-					url = new URL("http://www.elitetorrent.net/categoria/17/peliculas-microhd/pag:" + page);
-					break;
-					
-				case 5: // series
-					url = new URL("http://www.elitetorrent.net/categoria/4/series/pag:" + page);
-					break;
-					
-				case 6:	// docus y tv
-					url = new URL("http://www.elitetorrent.net/categoria/6/docus-y-tv/pag:" + page);
-					break;
-					
-				default:	// all
-					url = new URL("http://www.elitetorrent.net/descargas/pag:" + page);
-					break;
-			
-			}
-			
-			URLConnection conn = url.openConnection();
-			BufferedReader entrada = new BufferedReader( new InputStreamReader(conn.getInputStream()));
-			
-			String linea;
-			
-			while ((linea = entrada.readLine()) != null) {
-				document.append(linea);
-			}
+		String url = null;
 
-			entrada.close();
-			
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		switch (typeDoc) {
+
+		case 1: // estrenos
+			url = "http://www.elitetorrent.net/categoria/1/estrenos/pag:"
+					+ page;
+			break;
+
+		case 2: // peliculas
+			url = "http://www.elitetorrent.net/categoria/2/peliculas/pag:"
+					+ page;
+			break;
+
+		case 3: // HDRIP
+			url = "http://www.elitetorrent.net/categoria/13/peliculas-hdrip/pag:"
+					+ page;
+			break;
+
+		case 4: // microHD
+			url = "http://www.elitetorrent.net/categoria/17/peliculas-microhd/pag:"
+					+ page;
+			break;
+
+		case 5: // series
+			url = "http://www.elitetorrent.net/categoria/4/series/pag:" + page;
+			break;
+
+		case 6: // docus y tv
+			url = "http://www.elitetorrent.net/categoria/6/docus-y-tv/pag:"
+					+ page;
+			break;
+
+		default: // all
+			url = "http://www.elitetorrent.net/descargas/pag:" + page;
+			break;
+
 		}
-		
-		return document.toString();
-		
+
+		return getPage(url);
+
 	}
 
 	public List<Ficha> processPage(String page) {
@@ -97,64 +78,64 @@ public class DocumentsOperElite implements IDocumentsOper {
 		}
 		return fichas;
 	}
-	
+
 	public void getTorrent(Ficha ficha) {
 		if (ficha == null) {
 			return;
 		}
-		
-		try {
-			
-			Document doc = Jsoup.parse(new URL(ficha.getUrl()), 10000);
-			String magnet = doc.getElementsByClass("enlace_torrent").get(1).attr("href");
-			String details = doc.getElementsByClass("detalles").get(0).html();
-			
-			ficha.setTorrent(magnet);
-			ficha.setDetails(details);
-			
-			
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+
+		String page = getPage(ficha.getUrl());
+
+		Document doc = Jsoup.parse(page);
+		String magnet = doc.getElementsByClass("enlace_torrent").get(1)
+				.attr("href");
+		String details = doc.getElementsByClass("detalles").get(0).html();
+
+		ficha.setTorrent(magnet);
+		ficha.setDetails(details);
 	}
 
 	public String getPageSearch(String search, int page) {
+		String searchText = search;
+		searchText.replace(" ", "+");
+
+		String url = "http://www.elitetorrent.net/busqueda/" + searchText
+				+ "/pag:" + page;
+
+		return getPage(url);
+	}
+
+	/**
+	 * Get the html of the given page.
+	 * 
+	 * @param page
+	 *            URL
+	 * @return String with the html
+	 */
+	private String getPage(String page) {
 		StringBuilder document = new StringBuilder();
 		try {
-			
-			URL url = null;
-			String searchText = search;
-			searchText.replace(" ", "+");
-			
-			url = new URL("http://www.elitetorrent.net/busqueda/" + searchText + "/pag:" + page);
-			
+
+			URL url = new URL(page);
+
 			URLConnection conn = url.openConnection();
-			BufferedReader entrada = new BufferedReader( new InputStreamReader(conn.getInputStream()));
-			
+			BufferedReader entrada = new BufferedReader(new InputStreamReader(
+					conn.getInputStream(), "utf-8"));
+
 			String linea;
-			
+
 			while ((linea = entrada.readLine()) != null) {
 				document.append(linea);
 			}
 
 			entrada.close();
-			
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return document.toString();
-		
+
 	}
-	
+
 }

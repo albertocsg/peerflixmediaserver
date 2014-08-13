@@ -307,7 +307,7 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 				.append("<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n")
 				.append("<meta SYABAS-FULLSCREEN>\n")
 				.append("</head>\n")
-				.append("<body bgcolor=\"#5CACE5\" text=\"#f0f8ff\" link=\"#f0f8ff\" alink=\"#ffd700\">\n");
+				.append("<body bgcolor=\"#5782BA\" text=\"#f0f8ff\" link=\"#f0f8ff\" alink=\"#ffd700\">\n");
 		return header.toString();
 	}
 
@@ -376,7 +376,7 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 					if (col == 0) {
 						response.append("<tr>\n");
 					}
-					response.append("<td><table><tr><td><img src=\"")
+					response.append("<td valign=\"baseline\"><table><tr><td><img src=\"")
 							.append(ficha.getImagen())
 							.append("\" border=\"0\" width=120 height=170></td></tr><tr><td>\n")
 							.append("<a href=\"./torrent?").append(i)

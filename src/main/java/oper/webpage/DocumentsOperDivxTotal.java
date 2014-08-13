@@ -1,9 +1,7 @@
 package oper.webpage;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -106,45 +104,27 @@ public class DocumentsOperDivxTotal implements IDocumentsOper {
 			String page = getPage(ficha.getUrl());
 
 			Document doc = Jsoup.parse(page);
-			Elements elements = doc.getElementsByClass("ficha_link_det");
-			ficha.setTorrent("http://www.divxtotal.com" + elements.get(0).getElementsByTag("a").get(0)
-					.attr("href"));
+			
+			String torrent = doc.getElementsByClass("ficha_link_det").get(0).getElementsByTag("a").get(0).attr("href");
+			torrent = "http://www.divxtotal.com" + torrent;
+			String details = doc.getElementsByClass("fichatxt").get(0).html();
+			String image = doc.getElementsByClass("ficha_img").get(0).getElementsByTag("img").get(0).attr("src");
+			image = "http://www.divxtotal.com" + image;
+			
+			ficha.setTorrent(torrent);
+			ficha.setDetails(details);
+			ficha.setImagen(image);
 		}
 	}
 
 	public String getPageSearch(String search, int page) {
-		StringBuilder document = new StringBuilder();
-		try {
+		String searchText = search;
+		searchText.replace(" ", "+");
 
-			URL url = null;
-			String searchText = search;
-			searchText.replace(" ", "+");
+		String url = "http://www.divxtotal.com/buscar.php?busqueda=" + searchText
+				+ "&pagina=" + page;
 
-			url = new URL("http://www.divxtotal.com/buscar.php?busqueda=" + searchText
-					+ "&pagina=" + page);
-
-			URLConnection conn = url.openConnection();
-			BufferedReader entrada = new BufferedReader(new InputStreamReader(
-					conn.getInputStream()));
-
-			String linea;
-
-			while ((linea = entrada.readLine()) != null) {
-				document.append(linea);
-			}
-
-			entrada.close();
-
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return document.toString();
-
+		return getPage(url);
 	}
 
 	/**
@@ -157,11 +137,10 @@ public class DocumentsOperDivxTotal implements IDocumentsOper {
 		try {
 
 			URL url = new URL(page);
-			;
 
 			URLConnection conn = url.openConnection();
 			BufferedReader entrada = new BufferedReader(new InputStreamReader(
-					conn.getInputStream()));
+					conn.getInputStream(), "iso-8859-1"));
 
 			String linea;
 
@@ -171,11 +150,7 @@ public class DocumentsOperDivxTotal implements IDocumentsOper {
 
 			entrada.close();
 
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
@@ -183,24 +158,5 @@ public class DocumentsOperDivxTotal implements IDocumentsOper {
 
 	}
 
-	/**
-	 * Get and update the image and torrent uri of the given ficha
-	 * @param ficha
-	 */
-	private void getImageAndTorrent(Ficha ficha) {
-		// Check if ficha is not null and if has url.
-		if (ficha != null & ficha.getUrl() != null && !ficha.getUrl().equals("")) {
-
-			String page = getPage(ficha.getUrl());
-
-			Document doc = Jsoup.parse(page);
-			Elements elements = doc.getElementsByClass("ficha_img");
-			ficha.setImagen("http://www.divxtotal.com" + elements.get(0).getElementsByTag("img").get(0)
-					.attr("src"));
-			elements = doc.getElementsByClass("ficha_link_det");
-			ficha.setTorrent("http://www.divxtotal.com" + elements.get(0).getElementsByTag("a").get(0)
-					.attr("href"));
-		}
-	}
 
 }
