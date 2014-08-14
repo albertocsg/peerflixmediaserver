@@ -38,6 +38,9 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 	private IDocumentsOper documentsOperDivxTotal;
 
 	@Autowired
+	private IDocumentsOper documentsOperNewpct;
+
+	@Autowired
 	private IRunPeerflix runPeerflix;
 
 	@Autowired
@@ -51,7 +54,7 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 	private SOURCE currentSource = null;
 
 	enum SOURCE {
-		ELITETORRENT, DIVXTOTAL
+		ELITETORRENT, DIVXTOTAL, NEWPCT
 	}
 
 	/**
@@ -85,9 +88,9 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		OutputStream out = null;
 		String response = null;
 
-		if (exchange.getRequestURI().getPath().equals("/") ||
-				exchange.getRequestURI().getPath().equals("/list") ||
-				exchange.getRequestURI().getPath().equals("/cat_0_1")) {
+		if (exchange.getRequestURI().getPath().equals("/")
+				|| exchange.getRequestURI().getPath().equals("/list")
+				|| exchange.getRequestURI().getPath().equals("/cat_0_1")) {
 			numPage = 0;
 			typePage = 0;
 			response = tryList(SOURCE.ELITETORRENT);
@@ -165,6 +168,26 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 			typePage = 10;
 			searchPage = exchange.getRequestURI().getQuery();
 			response = trySearch(SOURCE.DIVXTOTAL);
+		} else if (exchange.getRequestURI().getPath().equals("/cat_1_3")) {
+			numPage = 0;
+			typePage = 1;
+			response = tryList(SOURCE.NEWPCT);
+		} else if (exchange.getRequestURI().getPath().equals("/cat_2_3")) {
+			numPage = 0;
+			typePage = 2;
+			response = tryList(SOURCE.NEWPCT);
+		} else if (exchange.getRequestURI().getPath().equals("/cat_3_3")) {
+			numPage = 0;
+			typePage = 3;
+			response = tryList(SOURCE.NEWPCT);
+		} else if (exchange.getRequestURI().getPath().equals("/cat_4_3")) {
+			numPage = 0;
+			typePage = 4;
+			response = tryList(SOURCE.NEWPCT);
+		} else if (exchange.getRequestURI().getPath().equals("/cat_5_3")) {
+			numPage = 0;
+			typePage = 5;
+			response = tryList(SOURCE.NEWPCT);
 		} else if (exchange.getRequestURI().getPath().equals("/detail")) {
 			response = tryDetail();
 		} else if (exchange.getRequestURI().getPath().equals("/torrent")) {
@@ -190,7 +213,7 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		StringBuilder response = new StringBuilder();
 		List<Ficha> fichasTmp;
 		String page;
-		
+
 		currentSource = source;
 		IDocumentsOper docOper = getDocumentsOper(source);
 
@@ -218,7 +241,7 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		List<Ficha> fichasTmp;
 
 		currentSource = source;
-		
+
 		IDocumentsOper docOper = getDocumentsOper(source);
 
 		// If it's the first page, the refill the list of fichas
@@ -247,7 +270,7 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		StringBuilder response = new StringBuilder();
 		int i = Integer.valueOf(index);
 		i = i + ((numPage - 1) * elementsPerPage);
-		
+
 		IDocumentsOper docOper = getDocumentsOper(currentSource);
 
 		if (fichas.get(i).getTorrent() == null) {
@@ -316,7 +339,6 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		footer.append("</body>\n</html>\n");
 		footer.append("                                             ");
 		return footer.toString();
-
 	}
 
 	private String getCategories() {
@@ -344,6 +366,13 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		response.append("<a href=\"./cat_7_2\">Terror</a> | \n");
 		response.append("<a href=\"./cat_8_2\">Thriller</a> | \n");
 		response.append("<a href=\"./cat_9_2\">Españolas</a>\n");
+		response.append("<br>\n");
+		response.append("NEWPCT: ");
+		response.append("<a href=\"./cat_1_3\">DVDRip BRRip</a> | \n");
+		response.append("<a href=\"./cat_2_3\">Estrenos</a> | \n");
+		response.append("<a href=\"./cat_3_3\">MicroHD</a> | \n");
+		response.append("<a href=\"./cat_4_3\">Series HDTV</a> | \n");
+		response.append("<a href=\"./cat_5_3\">Series HD</a> | \n");
 		response.append("<br><br>\n");
 
 		return response.toString();
@@ -371,16 +400,22 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 			response.append("<table>");
 			int col = 0;
 			int i = 0;
+			String nombre = null;
 			for (Ficha ficha : fichas) {
 				if (ficha != null) {
 					if (col == 0) {
 						response.append("<tr>\n");
 					}
-					response.append("<td valign=\"baseline\"><table><tr><td><img src=\"")
+					nombre = ficha.getNombre();
+					if (nombre.length() > 50) {
+						nombre = nombre.substring(0, 50) + "...";
+					}
+					response.append(
+							"<td valign=\"top\"><table><tr><td><img src=\"")
 							.append(ficha.getImagen())
 							.append("\" border=\"0\" width=120 height=170></td></tr><tr><td>\n")
 							.append("<a href=\"./torrent?").append(i)
-							.append("\">").append(ficha.getNombre())
+							.append("\">").append(nombre)
 							.append("</a></td></tr></table><td>\n");
 					col++;
 					i++;
@@ -431,22 +466,26 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 
 		return selection;
 	}
-	
+
 	private IDocumentsOper getDocumentsOper(SOURCE source) {
 		IDocumentsOper docOper = documentsOperElite;
-		
+
 		switch (source) {
-			case ELITETORRENT:
-				docOper = documentsOperElite;
-				break;
-	
-			case DIVXTOTAL:
-				docOper = documentsOperDivxTotal;
-				break;
+		case ELITETORRENT:
+			docOper = documentsOperElite;
+			break;
+
+		case DIVXTOTAL:
+			docOper = documentsOperDivxTotal;
+			break;
+
+		case NEWPCT:
+			docOper = documentsOperNewpct;
+			break;
 		}
-		
+
 		return docOper;
-		
+
 	}
 
 }
