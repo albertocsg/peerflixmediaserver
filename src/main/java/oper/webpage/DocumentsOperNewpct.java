@@ -60,14 +60,11 @@ public class DocumentsOperNewpct implements IDocumentsOper {
 		Elements elements = doc.getElementsByTag("li");
 		ArrayList<Ficha> fichas = new ArrayList<Ficha>();
 		String nombre = null;
-		String image = null;
 		for (Element e : elements) {
 			Ficha ficha = new Ficha();
 			nombre = e.getElementsByClass("cover").get(0).text();
 			ficha.setNombre(nombre);
-			image = e.getElementsByTag("img").get(0).attr("src");
-			image = image.substring(0, 61) + "cover.jpg";
-			ficha.setImagen(image);
+			ficha.setImagen(e.getElementsByTag("img").get(0).attr("src"));
 			ficha.setUrl(e.getElementsByTag("a").get(0).attr("href"));
 			fichas.add(ficha);
 		}
