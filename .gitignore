@@ -3,4 +3,4 @@
 .project
 .settings/
 target/
-acsg/
+node_modules/
