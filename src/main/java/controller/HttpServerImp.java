@@ -384,16 +384,17 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 
 		response.append(getHtmlHeader());
 
+		response.append("<a href=\"./next\">Siguiente</a> | ");
+		response.append(numPage);
+		response.append(" | <a href=\"./back\">Anterior</a><br><br>");
+
 		if (runPeerflix.isRunning()) {
 			response.append("<a href=\"http://").append(getInternalIP())
 					.append(":1234\" vod>Ver ")
 					.append(runPeerflix.getFicha().getNombre())
 					.append("</a><br><br>");
 		}
-
-		response.append("<a href=\"./next\">Siguiente</a> | ");
-		response.append(numPage);
-		response.append(" | <a href=\"./back\">Anterior</a><br><br>");
+		
 		response.append(getCategories());
 
 		if (fichas != null) {
