@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.StringTokenizer;
 
 import model.Ficha;
@@ -22,10 +21,15 @@ public class RunPeerflixImp implements IRunPeerflix {
 	@Qualifier("configImp")
 	private IConfig config;
 
-	private static Process peerflixProcess = null;
-	private static Ficha fichaRunning = null;
+	private Process peerflixProcess = null;
+	private Ficha fichaRunning = null;
+	
+	public RunPeerflixImp() {
+		peerflixProcess = null;
+		fichaRunning = null;
+	}
 
-	public void run(Ficha ficha) {
+	public void run(Ficha ficha, int element) {
 		// If the ficha is the same that the one that is running, then do nothing.
 		if (fichaRunning != null && ficha != null && fichaRunning.getTorrent().equals(ficha.getTorrent())) {
 			return;
@@ -40,8 +44,18 @@ public class RunPeerflixImp implements IRunPeerflix {
 			fichaRunning = ficha;
 			String peerflixPath = config.getValue(Keys.PEERFLIXPATH);
 			String downloadPath = config.getValue(Keys.DOWNLOADPATH);
-			peerflixProcess = new ProcessBuilder(peerflixPath, ficha.getTorrent(), "--quiet", "--remove",
-					"--port", "1234", "--path", downloadPath).start();
+			if (element >= 0) {
+				launchProcess(false, peerflixPath, ficha.getTorrent(), 
+						"--quiet", "--remove",
+						"--port", "1234", 
+						"--path", downloadPath, 
+						"--index", String.valueOf(element));
+			} else {
+				launchProcess(false, peerflixPath, ficha.getTorrent(), 
+						"--quiet", "--remove",
+						"--port", "1234", 
+						"--path", downloadPath);
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 			peerflixProcess = null;
@@ -81,11 +95,48 @@ public class RunPeerflixImp implements IRunPeerflix {
 			output = launchProcess(true, peerflixPath, ficha.getTorrent(), "--list");
 		} catch (Exception e) {
 			e.printStackTrace();
-			peerflixProcess = null;
-			fichaRunning = null;
 		}
 		
 		// Transform the output to a String[]
+		elements = processElementsToList(output);
+		
+		return elements;
+	}
+	
+	
+	// -------------------------
+	// ---- PRIVATE METHODS ----
+	// -------------------------
+	
+	private String launchProcess(boolean mustWait, String... command) throws IOException {
+		StringBuilder output = new StringBuilder();
+		
+		 Process process = new ProcessBuilder(command).start();
+		 
+		if (mustWait) {
+			InputStreamReader inpStrd = new InputStreamReader(process.getInputStream());
+			BufferedReader buffRd = new BufferedReader(inpStrd);
+			
+			String line = null;			
+			while((line = buffRd.readLine()) != null) {
+				output.append(line).append("\n");
+			}
+			
+			buffRd.close();
+		} else {
+			peerflixProcess = process;
+		}
+		
+		return output.toString();
+	}
+
+	/**
+	 * Process the output of peerflix list command and transforms the elements to a array.
+	 * @param output the output of the peerflix list command.
+	 * @return the array of elements or null.
+	 */
+	private String[] processElementsToList(String output) {
+		String[] elements = null;
 		if (output != null) {
 			StringTokenizer tokens = new StringTokenizer(output, ":\n");
 			ArrayList<String> values = new ArrayList<String>();
@@ -110,32 +161,7 @@ public class RunPeerflixImp implements IRunPeerflix {
 		}
 		
 		return elements;
+		
 	}
-	
-	
-	// -------------------------
-	// ---- PRIVATE METHODS ----
-	// -------------------------
-	
-	private String launchProcess(boolean mustWait, String... command) throws IOException {
-		StringBuilder output = new StringBuilder();
-		
-		peerflixProcess = new ProcessBuilder(command).start();
-		
-		if (mustWait) {
-			InputStreamReader inpStrd = new InputStreamReader(peerflixProcess.getInputStream());
-			BufferedReader buffRd = new BufferedReader(inpStrd);
-			
-			String line = null;			
-			while((line = buffRd.readLine()) != null) {
-				output.append(line).append("\n");
-			}
-			
-			buffRd.close();
-		}
-		
-		return output.toString();
-	}
-	
 
 }

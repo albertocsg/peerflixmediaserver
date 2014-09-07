@@ -4,7 +4,7 @@ import model.Ficha;
 
 public interface IRunPeerflix {
 	
-	public void run(Ficha ficha);
+	public void run(Ficha ficha, int element);
 	
 	public void stop();
 	
