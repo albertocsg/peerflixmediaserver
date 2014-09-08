@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class DocumentsOperNewpct implements IDocumentsOper {
 	
-	private final String domain = "http://www.newpct1.com";
+	private final String domain = "http://www.newpct.com";
 
 	public String getPageURL(int typeDoc, int page) {
 		String url = null;
