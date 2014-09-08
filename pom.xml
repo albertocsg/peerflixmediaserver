@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.acsg</groupId>
   <artifactId>peerflixmediaserver</artifactId>
-  <version>0.2.2</version>
+  <version>0.2.3</version>
   <dependencies>
   	<dependency>
   		<groupId>org.springframework</groupId>
@@ -47,6 +47,22 @@
   				</excludes>
   			</configuration>
   		</plugin>
+  		
+		<plugin>
+			<artifactId>maven-dependency-plugin</artifactId>
+			<executions>
+				<execution>
+					<phase>package</phase>
+					<goals>
+						<goal>copy-dependencies</goal>
+					</goals>
+					<configuration>
+						<outputDirectory>${project.build.directory}/lib</outputDirectory>
+					</configuration>
+				</execution>
+			</executions>
+		</plugin>
+  		
   	</plugins>
   </build>
 </project>
