@@ -31,7 +31,9 @@ public class RunPeerflixImp implements IRunPeerflix {
 
 	public void run(Ficha ficha, int element) {
 		// If the ficha is the same that the one that is running, then do nothing.
-		if (fichaRunning != null && ficha != null && fichaRunning.getTorrent().equals(ficha.getTorrent())) {
+		if (fichaRunning != null 
+				&& ficha != null 
+				&& fichaRunning.getTorrent().equals(ficha.getTorrent())) {
 			return;
 		}
 		
@@ -56,7 +58,7 @@ public class RunPeerflixImp implements IRunPeerflix {
 						"--port", "1234", 
 						"--path", downloadPath);
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			peerflixProcess = null;
 			fichaRunning = null;
@@ -68,7 +70,7 @@ public class RunPeerflixImp implements IRunPeerflix {
 			try {
 				peerflixProcess.destroy();
 				peerflixProcess.waitFor();
-			} catch (InterruptedException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			} finally {
 				peerflixProcess = null;

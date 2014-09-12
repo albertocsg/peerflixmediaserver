@@ -54,13 +54,6 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 	private int elementsPerPage = 16;
 	private SOURCE currentSource = null;
 
-	enum SOURCE {
-		ELITETORRENT, DIVXTOTAL, NEWPCT
-	}
-
-	/**
-	 * Constructor
-	 */
 	public HttpServerImp() {
 	}
 
@@ -69,16 +62,9 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 
 			String httpPort = config.getValue(Keys.PORT);
 
-			httpServer = HttpServer.create(new InetSocketAddress(Integer
-					.valueOf(httpPort).intValue()), 0);
-			httpServer.createContext("/", this);
-			httpServer.setExecutor(null);
-			httpServer.start();
+			startHttpServer(httpPort);
 
-			System.out.println("Server started at port " + httpPort + ".");
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (Exception e) {
 			e.printStackTrace();
 			httpServer = null;
 		}
@@ -189,6 +175,18 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 			numPage = 0;
 			typePage = 5;
 			response = tryList(SOURCE.NEWPCT);
+		} else if (exchange.getRequestURI().getPath().equals("/cat_6_3")) {
+			numPage = 0;
+			typePage = 6;
+			response = tryList(SOURCE.NEWPCT);
+		} else if (exchange.getRequestURI().getPath().equals("/cat_7_3")) {
+			numPage = 0;
+			typePage = 7;
+			response = tryList(SOURCE.NEWPCT);
+		} else if (exchange.getRequestURI().getPath().equals("/cat_8_3")) {
+			numPage = 0;
+			typePage = 8;
+			response = tryList(SOURCE.NEWPCT);
 		} else if (exchange.getRequestURI().getPath().equals("/detail")) {
 			response = tryDetail(exchange.getRequestURI().getQuery());
 		} else if (exchange.getRequestURI().getPath().equals("/torrent")) {
@@ -263,62 +261,8 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		return response.toString();
 	}
 
-	/**
-	 * 
-	 * @param index
-	 * @return
-	 */
 	private String tryDetail(String index) {
 		StringBuilder response = new StringBuilder();
-		int i = getTorrentId(index);		
-
-		IDocumentsOper docOper = getDocumentsOper(currentSource);
-
-		if (fichas.get(i).getTorrent() == null) {
-			docOper.getTorrent(fichas.get(i));
-		}
-		
-		String[] elements = runPeerflix.getElements(fichas.get(i));
-		elements = clearElementsNotSupported(elements);
-		
-		if (isVariousElements(elements)) {
-			// Show the list of elements of the torrent
-			response.append(getHtmlHeader());
-			response.append("<table><tr>");
-			response.append("<td><img src=\"").append(fichas.get(i).getImagen())
-					.append("\" border=\"0\"></td>");
-			response.append("<td>").append(fichas.get(i).getDetails())
-					.append("</td></tr></table><br>");
-			for (int j=0; j<elements.length; j++) {
-			response.append("<br><a href=\"./torrent?" + index + "+" + j + "\">")
-					.append(elements[j])
-					.append("</a>");
-			}
-			response.append(getHtmlFooter());
-			
-		} else {
-			// Redirect to the torrent page.
-			response.append(tryTorrent(index+"+-1"));
-		}
-		
-		return response.toString();
-	}
-
-	private String tryTorrent(String param) {
-		StringBuilder response = new StringBuilder();
-		
-		String index = "";
-		int element = -1;
-		
-		// Get the parameters
-		StringTokenizer token = new StringTokenizer(param, "+");
-		if (token.hasMoreTokens()) {
-			index = token.nextToken();
-		}
-		if (token.hasMoreTokens()) {
-			element = Integer.valueOf(token.nextToken()).intValue();
-		}
-		
 		int i = getTorrentId(index);
 
 		IDocumentsOper docOper = getDocumentsOper(currentSource);
@@ -327,16 +271,67 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 			docOper.getTorrent(fichas.get(i));
 		}
 
-		if (element>=0) {
+		String[] elements = runPeerflix.getElements(fichas.get(i));
+		elements = clearElementsNotSupported(elements);
+
+		if (isVariousElements(elements)) {
+			// Show the list of elements of the torrent
+			response.append(getHtmlHeader());
+			response.append("<table><tr width='25%'>");
+			response.append("<td><img src=\"")
+					.append(fichas.get(i).getImagen())
+					.append("\" border=\"0\"></td>");
+			response.append("<td width='75%'>")
+					.append(fichas.get(i).getDetails())
+					.append("</td></tr></table><br>");
+			for (int j = 0; j < elements.length; j++) {
+				response.append(
+						"<br><a href=\"./torrent?" + index + "+" + j + "\">")
+						.append(elements[j]).append("</a>");
+			}
+			response.append(getHtmlFooter());
+
+		} else {
+			// Redirect to the torrent page.
+			response.append(tryTorrent(index + "+-1"));
+		}
+
+		return response.toString();
+	}
+
+	private String tryTorrent(String param) {
+		StringBuilder response = new StringBuilder();
+
+		String index = "";
+		int element = -1;
+
+		// Get the parameters
+		StringTokenizer token = new StringTokenizer(param, "+");
+		if (token.hasMoreTokens()) {
+			index = token.nextToken();
+		}
+		if (token.hasMoreTokens()) {
+			element = Integer.valueOf(token.nextToken()).intValue();
+		}
+
+		int i = getTorrentId(index);
+
+		IDocumentsOper docOper = getDocumentsOper(currentSource);
+
+		if (fichas.get(i).getTorrent() == null) {
+			docOper.getTorrent(fichas.get(i));
+		}
+
+		if (element >= 0) {
 			runPeerflix.stop();
 		}
 		runPeerflix.run(fichas.get(i), element);
 
 		response.append(getHtmlHeader());
-		response.append("<table><tr>");
+		response.append("<table><tr width='25%'>");
 		response.append("<td><img src=\"").append(fichas.get(i).getImagen())
 				.append("\" border=\"0\"></td>");
-		response.append("<td>").append(fichas.get(i).getDetails())
+		response.append("<td width='75%'>").append(fichas.get(i).getDetails())
 				.append("</td></tr></table>");
 		response.append("<br><br><a href=\"http://").append(getInternalIP())
 				.append(":1234\" vod>Ver ").append(fichas.get(i).getNombre())
@@ -408,6 +403,16 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		response.append("<a href=\"./search_1?banshee\">Banshee</a> | \n");
 		response.append("<a href=\"./search_1?big+bang+theory\">Big Bang Theory</a>\n");
 		response.append("<br>\n");
+		response.append("NEWPCT: ");
+		response.append("<a href=\"./cat_1_3\">DVDRip BRRip</a> | \n");
+		response.append("<a href=\"./cat_2_3\">Estrenos</a> | \n");
+		response.append("<a href=\"./cat_3_3\">MicroHD</a> | \n");
+		response.append("<a href=\"./cat_4_3\">Series HDTV</a> | \n");
+		response.append("<a href=\"./cat_5_3\">Series HD</a> | \n");
+		response.append("<a href=\"./cat_7_3\">Series V.O.</a> | \n");
+		response.append("<a href=\"./cat_8_3\">Documentales</a> | \n");
+		response.append("<a href=\"./cat_6_3\">Otros</a>\n");
+		response.append("<br>\n");
 		response.append("DIVXTOTAL: ");
 		response.append("<a href=\"./cat_0_2\">Todos</a> | \n");
 		response.append("<a href=\"./cat_1_2\">Animación</a> | \n");
@@ -419,13 +424,6 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		response.append("<a href=\"./cat_7_2\">Terror</a> | \n");
 		response.append("<a href=\"./cat_8_2\">Thriller</a> | \n");
 		response.append("<a href=\"./cat_9_2\">Españolas</a>\n");
-		response.append("<br>\n");
-		response.append("NEWPCT: ");
-		response.append("<a href=\"./cat_1_3\">DVDRip BRRip</a> | \n");
-		response.append("<a href=\"./cat_2_3\">Estrenos</a> | \n");
-		response.append("<a href=\"./cat_3_3\">MicroHD</a> | \n");
-		response.append("<a href=\"./cat_4_3\">Series HDTV</a> | \n");
-		response.append("<a href=\"./cat_5_3\">Series HD</a> | \n");
 		response.append("<br><br>\n");
 
 		return response.toString();
@@ -447,7 +445,7 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 					.append(runPeerflix.getFicha().getNombre())
 					.append("</a><br><br>");
 		}
-		
+
 		response.append(getCategories());
 
 		if (fichas != null) {
@@ -541,49 +539,50 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		return docOper;
 
 	}
-	
-	/**
-	 * Get the ID of the torrent from the index given.
-	 * @param index index of the torrent.
-	 * @return the id of the torrent.
-	 */
+
 	private int getTorrentId(String index) {
 		int i = Integer.valueOf(index);
 		i = i + ((numPage - 1) * elementsPerPage);
 		return i;
 	}
-	
+
 	private String[] clearElementsNotSupported(String[] elements) {
 		String extension = null;
-		for (int i=0; i<elements.length; i++) {
-			extension = elements[i].substring(elements[i].length() - 4, elements[i].length());
-			
+		for (int i = 0; i < elements.length; i++) {
+			extension = elements[i].substring(elements[i].length() - 4,
+					elements[i].length());
+
 			if (!extension.equalsIgnoreCase(".MKV")
 					&& !extension.equalsIgnoreCase(".AVI")
 					&& !extension.equalsIgnoreCase(".MP4")) {
 				elements[i] = "";
 			}
-			
+
 		}
-		
+
 		return elements;
 	}
-	
-	/**
-	 * Indicates if there is various elements supported.
-	 * @param elements array of elements.
-	 * @return boolean
-	 */
+
 	private boolean isVariousElements(String[] elements) {
 		int count = 0;
-		
-		for (int i=0; i<elements.length && count<2; i++) {
+
+		for (int i = 0; i < elements.length && count < 2; i++) {
 			if (!elements[i].equals("")) {
 				count++;
 			}
 		}
-		
-		return (count>1);
+
+		return (count > 1);
+	}
+
+	private void startHttpServer(String httpPort) throws IOException {
+		httpServer = HttpServer.create(
+				new InetSocketAddress(Integer.valueOf(httpPort).intValue()), 0);
+		httpServer.createContext("/", this);
+		httpServer.setExecutor(null);
+		httpServer.start();
+
+		System.out.println("Server started at port " + httpPort + ".");
 	}
 
 }

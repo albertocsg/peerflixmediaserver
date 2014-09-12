@@ -12,11 +12,6 @@ public interface IRunPeerflix {
 	
 	public boolean isRunning();
 	
-	/**
-	 * Get all the elements inside of the "ficha".
-	 * @param ficha
-	 * @return Array of String with the elements.
-	 */
 	public String[] getElements(Ficha ficha);
 
 }

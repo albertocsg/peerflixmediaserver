@@ -7,23 +7,24 @@ import controller.IHttpServer;
 
 public class PeerFlixServer {
 
-	public static void main(String[] args) {
-		
-		ApplicationContext context =
-				new ClassPathXmlApplicationContext("SpringBeans.xml");
+	private static ApplicationContext context;
 
-		IHttpServer httpServerOper = (IHttpServer) context.getBean("httpServer");
+	public static void main(String[] args) {
+
+		context = new ClassPathXmlApplicationContext("SpringBeans.xml");
+
+		IHttpServer httpServerOper = (IHttpServer) context
+				.getBean("httpServer");
 		httpServerOper.init();
-		
+
 		while (true) {
 			try {
-				Thread.currentThread().sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
+				Thread.sleep(1000);
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		
+
 	}
-	
+
 }
