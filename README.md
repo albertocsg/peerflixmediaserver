@@ -9,9 +9,13 @@ After that, download the sources and at the build folder of the project you must
 
 >npm install
 
-Then, you must change the config file inside the config folder.
+Configuration
+-------------
+You must change the config file inside the config folder.
 
-And at last, lauch the application
+Launch peerflixmediaserver
+--------------------------
+Launch the application with this command.
 
 >java -jar peerflixmediaserver-x.x.x.jar
 
