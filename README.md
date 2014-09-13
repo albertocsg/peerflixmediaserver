@@ -4,7 +4,7 @@ PeerflixMediaServer is a java application integrated with peerflix to provide a 
 
 Instalation
 -----------
-First you must install node.js (http://nodejs.org/) in your PC.
+First you must install [node.js](http://nodejs.org/) in your PC.
 After that, download the sources and at the build folder of the project you must execute this command to install the last version of peerflix.
 
 >npm install
