@@ -15,8 +15,11 @@ You must change the config file inside the config folder.
 
 Launch peerflixmediaserver
 --------------------------
-Launch the application with this command.
+Launch the application with this command
 
 >java -jar peerflixmediaserver-x.x.x.jar
 
 with the correct name of the jar.
+
+
+Enjoy!
