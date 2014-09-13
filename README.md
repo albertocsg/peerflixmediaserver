@@ -21,8 +21,11 @@ Launch the application with this command
 
 with the correct name of the jar.
 
+And then, open a browser with this URL http://127.0.0.1:8081
+
 License
 -------
 MIT license
+
 
 Enjoy!
