@@ -21,5 +21,8 @@ Launch the application with this command
 
 with the correct name of the jar.
 
+License
+-------
+MIT license
 
 Enjoy!
