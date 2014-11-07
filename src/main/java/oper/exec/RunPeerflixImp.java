@@ -49,13 +49,15 @@ public class RunPeerflixImp implements IRunPeerflix {
 			if (element >= 0) {
 				launchProcess(false, peerflixPath, ficha.getTorrent(), 
 						"--quiet", "--remove",
-						"--port", "1234", 
+						"--port", "1234",
+						"--connections", "50",
 						"--path", downloadPath, 
 						"--index", String.valueOf(element));
 			} else {
 				launchProcess(false, peerflixPath, ficha.getTorrent(), 
 						"--quiet", "--remove",
 						"--port", "1234", 
+						"--connections", "50",
 						"--path", downloadPath);
 			}
 		} catch (Exception e) {

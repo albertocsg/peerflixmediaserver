@@ -9,6 +9,6 @@
   "author": "",
   "license": "BSD",
   "dependencies": {
-    "peerflix": "~0.14.0"
+    "peerflix": "latest"
   }
 }
