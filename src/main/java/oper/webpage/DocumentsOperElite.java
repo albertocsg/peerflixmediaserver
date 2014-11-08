@@ -87,11 +87,13 @@ public class DocumentsOperElite implements IDocumentsOper {
 		String page = getPage(ficha.getUrl());
 
 		Document doc = Jsoup.parse(page);
-		String magnet = doc.getElementsByClass("enlace_torrent").get(1)
-				.attr("href");
+		//String magnet = doc.getElementsByClass("enlace_torrent").get(1)
+		//				.attr("href");
+		String torrent = "http://www.elitetorrent.net" + 
+				doc.getElementsByClass("enlace_torrent").get(0).attr("href");
 		String details = doc.getElementsByClass("detalles").get(0).html();
 
-		ficha.setTorrent(magnet);
+		ficha.setTorrent(torrent);
 		ficha.setDetails(details);
 	}
 
