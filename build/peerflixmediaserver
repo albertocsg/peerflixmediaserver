@@ -1,3 +1,3 @@
 #!/bin/bash
 JARPATH=/home/alberto/opt/peerflixmediaserver
-java -jar $JARPATH/peerflixmediaserver-0.2.9.jar
+java -jar $JARPATH/peerflixmediaserver-0.2.10.jar

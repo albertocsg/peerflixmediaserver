@@ -153,10 +153,12 @@ public class RunPeerflixImp implements IRunPeerflix {
 				
 				if (tokens.hasMoreTokens()) {
 					// Get the next token
-					line = tokens.nextToken();
-					line = line.substring(2, line.indexOf("[39m")-1);
-					line = line.replace("[35m", "");
-					values.add(line);
+					try {
+						line = tokens.nextToken();
+						line = line.substring(2, line.indexOf("[39m") - 1);
+						line = line.replace("[35m", "");
+						values.add(line);
+					} catch (Exception e) {;}
 				}
 				
 			}

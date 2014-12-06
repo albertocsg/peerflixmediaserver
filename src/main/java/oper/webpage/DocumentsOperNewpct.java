@@ -100,6 +100,9 @@ public class DocumentsOperNewpct implements IDocumentsOper {
 		String details = doc.getElementsByClass("descripcion_top").get(0).html();
 		details += "<br>" + doc.getElementsByClass("sinopsis").get(0).html();
 
+		// Prepare the correct url of the torrent.
+		magnet = domain + "/" + magnet.substring(magnet.indexOf("torrents"));
+		
 		ficha.setTorrent(magnet);
 		ficha.setDetails(details);
 	}
