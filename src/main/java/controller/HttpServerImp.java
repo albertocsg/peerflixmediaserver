@@ -187,6 +187,10 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 			numPage = 0;
 			typePage = 8;
 			response = tryList(SOURCE.NEWPCT);
+		} else if (exchange.getRequestURI().getPath().equals("/cat_9_3")) {
+			numPage = 0;
+			typePage = 9;
+			response = tryList(SOURCE.NEWPCT);
 		} else if (exchange.getRequestURI().getPath().equals("/detail")) {
 			response = tryDetail(exchange.getRequestURI().getQuery());
 		} else if (exchange.getRequestURI().getPath().equals("/torrent")) {
@@ -410,6 +414,7 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		response.append("<a href=\"./cat_4_3\">Series HDTV</a> | \n");
 		response.append("<a href=\"./cat_5_3\">Series HD</a> | \n");
 		response.append("<a href=\"./cat_7_3\">Series V.O.</a> | \n");
+		response.append("<a href=\"./cat_9_3\">Miniseries</a> | \n");
 		response.append("<a href=\"./cat_8_3\">Documentales</a> | \n");
 		response.append("<a href=\"./cat_6_3\">Otros</a>\n");
 		response.append("<br>\n");
