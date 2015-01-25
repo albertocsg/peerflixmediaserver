@@ -5,7 +5,8 @@ public interface IConfig {
 	public enum Keys {
 		PEERFLIXPATH,
 		DOWNLOADPATH,
-		PORT
+		PORT,
+		IP
 	};
 	
 	/**

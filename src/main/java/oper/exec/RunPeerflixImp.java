@@ -46,10 +46,12 @@ public class RunPeerflixImp implements IRunPeerflix {
 			fichaRunning = ficha;
 			String peerflixPath = config.getValue(Keys.PEERFLIXPATH);
 			String downloadPath = config.getValue(Keys.DOWNLOADPATH);
+			String ip = config.getValue(Keys.IP);
 			if (element >= 0) {
 				launchProcess(false, peerflixPath, ficha.getTorrent(), 
 						"--quiet", "--remove",
 						"--port", "1234",
+						"--hostname", ip,
 						"--connections", "50",
 						"--path", downloadPath, 
 						"--index", String.valueOf(element));
@@ -57,6 +59,7 @@ public class RunPeerflixImp implements IRunPeerflix {
 				launchProcess(false, peerflixPath, ficha.getTorrent(), 
 						"--quiet", "--remove",
 						"--port", "1234", 
+						"--hostname", ip,
 						"--connections", "50",
 						"--path", downloadPath);
 			}

@@ -29,6 +29,10 @@ public class ConfigImp implements IConfig {
 			case PORT:
 				value = rb.getString("port");
 				break;
+				
+			case IP:
+				value = rb.getString("ip");
+				break;
 		}
 		
 		return value;

@@ -53,6 +53,7 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 	private int typePage = 0;
 	private int elementsPerPage = 16;
 	private SOURCE currentSource = null;
+	private String ip = null;
 
 	public HttpServerImp() {
 	}
@@ -346,30 +347,35 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 	}
 
 	private String getInternalIP() {
-		String ip = "";
-		boolean salir = false;
-
-		try {
-			Enumeration<NetworkInterface> e = NetworkInterface
-					.getNetworkInterfaces();
-
-			while (e.hasMoreElements() && !salir) {
-				NetworkInterface n = (NetworkInterface) e.nextElement();
-				Enumeration<InetAddress> ee = n.getInetAddresses();
-				while (ee.hasMoreElements() && !salir) {
-					InetAddress i = (InetAddress) ee.nextElement();
-					if (i instanceof Inet4Address && !i.isLoopbackAddress()) {
-						ip = i.getHostAddress();
-						salir = true;
+		if (ip == null) {
+			ip = config.getValue(Keys.IP);
+			boolean salir = false;
+	
+			// If there is not ip in config file, it look for a valid ip over the system.
+			if (ip == null || ip.isEmpty()) {
+				try {
+					Enumeration<NetworkInterface> e = NetworkInterface
+							.getNetworkInterfaces();
+		
+					while (e.hasMoreElements() && !salir) {
+						NetworkInterface n = (NetworkInterface) e.nextElement();
+						Enumeration<InetAddress> ee = n.getInetAddresses();
+						while (ee.hasMoreElements() && !salir) {
+							InetAddress i = (InetAddress) ee.nextElement();
+							if (i instanceof Inet4Address && !i.isLoopbackAddress()) {
+								ip = i.getHostAddress();
+								salir = true;
+							}
+						}
 					}
+				} catch (SocketException e1) {
+					e1.printStackTrace();
 				}
 			}
-		} catch (SocketException e1) {
-			e1.printStackTrace();
-		}
-
-		if (ip.isEmpty()) {
-			ip = "127.0.0.1";
+	
+			if (ip.isEmpty()) {
+				ip = "127.0.0.1";
+			}
 		}
 
 		return ip;
