@@ -76,7 +76,9 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		OutputStream out = null;
 		String response = null;
 
-		if (exchange.getRequestURI().getPath().equals("/cat_0_1")) {
+		if (exchange.getRequestURI().getPath().equals("/")
+				|| exchange.getRequestURI().getPath().equals("/list")
+				|| exchange.getRequestURI().getPath().equals("/cat_0_1")) {
 			numPage = 0;
 			typePage = 0;
 			response = tryList(SOURCE.ELITETORRENT);
@@ -154,9 +156,7 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 			typePage = 10;
 			searchPage = exchange.getRequestURI().getQuery();
 			response = trySearch(SOURCE.DIVXTOTAL);
-		} else if (exchange.getRequestURI().getPath().equals("/")
-				|| exchange.getRequestURI().getPath().equals("/list")
-				|| exchange.getRequestURI().getPath().equals("/cat_1_3")) {
+		} else if (exchange.getRequestURI().getPath().equals("/cat_1_3")) {
 			numPage = 0;
 			typePage = 1;
 			response = tryList(SOURCE.NEWPCT);
@@ -402,7 +402,7 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 	private String getCategories() {
 		StringBuilder response = new StringBuilder();
 
-		/*response.append("ELITETORRENT: ");
+		response.append("ELITETORRENT: ");
 		response.append("<a href=\"./cat_0_1\">Todos</a> | \n");
 		response.append("<a href=\"./cat_1_1\">Estrenos</a> | \n");
 		response.append("<a href=\"./cat_2_1\">Peliculas</a> | \n");
@@ -412,7 +412,9 @@ public class HttpServerImp implements IHttpServer, HttpHandler {
 		response.append("<a href=\"./cat_6_1\">Documentales y TV</a> | \n");
 		response.append("<a href=\"./search_1?banshee\">Banshee</a> | \n");
 		response.append("<a href=\"./search_1?big+bang+theory\">Big Bang Theory</a>\n");
-		response.append("<br>\n");*/
+		response.append("<a href=\"./search_1?true+detective\">True Detective</a>\n");
+		response.append("<a href=\"./search_1?juego+tronos\">Juego de Tronos</a>\n");
+		response.append("<br>\n");
 		response.append("NEWPCT: ");
 		response.append("<a href=\"./cat_1_3\">DVDRip BRRip</a> | \n");
 		response.append("<a href=\"./cat_2_3\">Estrenos</a> | \n");
